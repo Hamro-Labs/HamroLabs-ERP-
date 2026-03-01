@@ -1,0 +1,45 @@
+// Fonts
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+// Variables
+$family-sans-serif: 'Inter', sans-serif;
+$primary: #4f46e5; // Modern Indigo
+$secondary: #64748b;
+$success: #10b981;
+$info: #0ea5e9;
+$warning: #f59e0b;
+$danger: #ef4444;
+$dark: #0f172a;
+
+// Customizing Bootstrap
+$body-bg: #f8fafc;
+$body-color: #1e293b;
+$border-radius: 0.5rem;
+$border-radius-lg: 0.75rem;
+
+// Import Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+// Custom Global Styles
+body {
+    font-family: $family-sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.btn {
+    font-weight: 500;
+    padding: 0.625rem 1.25rem;
+    transition: all 0.2s ease-in-out;
+    
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+}
+
+.card {
+    border: none;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    border-radius: $border-radius-lg;
+}

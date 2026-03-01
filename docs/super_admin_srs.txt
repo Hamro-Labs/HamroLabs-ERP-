@@ -1,0 +1,788 @@
+=== SRS ===
+--- Page 10 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 10 Path Purpose  Owner  
+app/Http/Controllers/SuperAdmin/  Platform owner route controllers  Lead Dev  
+app/Http/Controllers/Admin/  Institute admin route controllers  Backend Dev  
+app/Http/Controllers/FrontDesk/  Front desk operator route 
+controllers  Backend Dev  
+app/Http/Controllers/Teacher/  Teacher route controllers  Backend Dev  
+app/Http/Controllers/Student/  Student route controllers  Backend Dev  
+app/Http/Controllers/Guardian/  Guardian route controllers  Backend Dev  
+app/Http/Controllers/Api/  PWA mobile API endpoints  Backend Dev  
+app/Http/Middleware/IdentifyTenant.php  CRITICAL: reads subdomain → 
+sets tenant context  Lead Dev  
+app/Http/Middleware/EnsureTenantActive.php  Blocks suspended/expired 
+tenants  Lead Dev  
+app/Http/Middleware/RoleMiddleware.php  Blocks wrong roles from wrong 
+routes  Lead Dev  
+app/Http/Middleware/CheckPlanFeature.php  Blocks features not in 
+subscription plan tier  Lead Dev  
+app/Http/Requests/  Form validation classes — one 
+file per form  Backend Dev  
+app/Models/  One Eloquent model per 
+database table  Lead Dev  
+app/Traits/BelongsToTenant.php  Applied to ALL tenant -scoped 
+models — enforces data 
+isolation  Lead Dev  
+app/Services/  Business logic layer — NOT in 
+controllers  Backend Dev  
+app/Jobs/  Queued background tasks 
+(SMS, emails, reports)  Backend Dev  
+app/Policies/  Authorization rules — WHO can 
+do WHAT  Lead Dev  
+database/migrations/  One file per table, named 
+precisely in dependency order  Lead Dev  
+database/seeders/  SuperAdminSeeder and 
+DemoInstituteSeeder  Lead Dev  
+resources/views/layouts/  Role-specific Blade layout files 
+(6 layouts)  Frontend Dev  
+resources/views/super -admin/  Super Admin Blade templates  Frontend Dev  
+resources/views/admin/  Institute Admin Blade templates  Frontend Dev  
+resources/js/app.js  Alpine.js bootstrapped here  Frontend Dev  
+routes/web.php  All web routes organized by role 
+groups  Lead Dev  
+routes/api.php  PWA mobile API routes 
+(Sanctum token auth)  Lead Dev  
+--- Page 14 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 14 SECTION 5 — USER ROLES AND PERMISSIONS  
+ 
+The HamroLabs ERP implements six distinct user roles with precisely defined permissions and 
+restrictions. All roles share the users table but are differentiated by the role enum field. Each role receives 
+a dedicated dashboard, sidebar navigation, and scope d data access.  
+ 
+Role Scope  Data Access  Primary Function  Auth Level  
+Super Admin  Platform -
+wide All tenants  Platform management, 
+billing, support  2FA mandatory  
+Institute 
+Admin  Own tenant  Full tenant data  Full institute operations  2FA mandatory  
+Front Desk  Own tenant  Students, Fees (no 
+salary)  Admissions, fee 
+collection  Password + OTP  
+Teacher  Assigned 
+batches  Assigned batches 
+only Academic delivery, 
+exams  Password  
+Student  Own record  Own data only  Learning, exams, fee 
+view Password  
+Guardian  Linked child 
+only Child's data (read -
+only) Monitor child's progress  Password  
+ 
+5.1 Super Admin (Platform Owner — Hamro Labs)  
+Responsibilities  
+• Create, configure, suspend, and permanently delete tenant institute accounts  
+• Assign and modify subscription plans per tenant; apply discounts and overrides  
+• Monitor system -wide performance, uptime, and resource usage  
+• Push platform -wide announcements and feature updates to all tenants  
+• Impersonate Institute Admin for support purposes — full audit trail maintained  
+• Deploy schema migrations, manage feature flags per tenant per plan  
+• Access cross -tenant aggregated analytics (anonymized) for business intelligence  
+Permissions  
+• FULL access to all platform -level settings and configurations  
+• READ access to all tenant data (for support and audit — all access logged)  
+• WRITE access to tenant account status, plan assignment, and billing records  
+Restrictions  
+• Cannot modify individual institute academic data except during explicit support sessions  
+• All tenant data access logged with timestamp, user_id, reason, and duration  
+• No access to student PII beyond what is needed for active support tickets  
+ 
+5.2 Institute Admin  
+--- Page 15 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 15 Responsibilities  
+• Configure institute profile: logo, branding, contact details, subdomain  
+• Create and manage all courses, batches, academic structure, and fee templates  
+• Create and manage teacher, front desk, and guardian accounts  
+• View all financial reports, fee collections, outstanding dues, and salary records  
+• Export any module data to Excel/PDF via the Python report engine  
+• Configure SMS/email templates, notification rules, and academic calendar  
+• Manage exam question banks, approve teacher -submitted questions, schedule exams  
+Permissions  
+• FULL access to all modules within their own tenant  
+• CREATE / EDIT / DELETE: all student records, courses, batches, teachers, fee items  
+• READ / EXPORT: all financial data including salary records and payment history  
+• CONFIGURE: RBAC -based feature access for sub -roles within their tenant  
+Restrictions  
+• Cannot access other tenants' data under any circumstance  
+• Cannot modify subscription plan or billing — must contact Super Admin  
+ 
+5.3 Front Desk Operator  
+Responsibilities  
+• Manage student inquiries and admission requests end -to-end 
+• Register new students, collect documents, generate roll numbers and ID cards  
+• Collect and record fee payments, generate and print PDF receipts  
+• Issue and return library books, manage daily check -in records  
+• Send SMS/email notifications to students and guardians  
+Permissions  
+• CREATE / EDIT: student inquiries, admission records, fee payment records  
+• READ: student profiles, batch lists, fee dues and payment history  
+• SEND: SMS/email broadcasts to students and guardians  
+• GENERATE: fee receipts, student ID cards, daily collection reports  
+Restrictions  
+• NO access to teacher salary records, payroll, or any staff financial data  
+• NO access to exam question banks or exam configuration  
+• CANNOT delete student records or modify roll numbers — Admin only  
+• CANNOT modify fee item setup or discount rules — Admin only  
+ 
+5.4 Teacher  
+Responsibilities  
+--- Page 18 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 18 SECTION 6 — FUNCTIONAL REQUIREMENTS  
+ 
+6.1 Authentication and Authorization System  
+FR-AUTH -001: Multi -Role Login  
+• Single login page serves all 6 roles — role detected from user record post -authentication  
+• On successful login, redirect to role -specific dashboard URL prefix  
+• JWT 8 -hour access token issued on login; 30 -day refresh token issued concurrently  
+• Refresh token rotated on every use — stolen token invalidated on next legitimate use  
+• All tokens immediately invalidated on logout  
+FR-AUTH -002: Two -Factor Authentication  
+• Mandatory 2FA via OTP SMS (Sparrow SMS) for Super Admin and Institute Admin accounts  
+• OTP valid for 10 minutes, single use, 6 -digit numeric  
+• Front Desk operator: optional Password + OTP (configurable per institute)  
+FR-AUTH -003: Rate Limiting and Security  
+• Maximum 5 failed login attempts per IP address per 15 -minute window  
+• After 5 failures: CAPTCHA challenge required before further attempts  
+• All authentication events (success, failure, logout) logged to audit_logs table  
+FR-AUTH -004: Role -Based Access Control  
+• RBAC enforced at middleware layer — role extracted from JWT payload  
+• Permission matrix checked before controller execution — never in -controller  
+• Unauthorized role access returns HTTP 403 with standardized error response  
+• Feature plan gates enforced at middleware: plan_id from JWT checked against feature flag 
+matrix  
+ 
+6.2 Tenant Management (Super Admin Module)  
+FR-TENANT -001: Institute Provisioning  
+• Super Admin creates institute: name, subdomain, initial plan, primary admin email  
+• System auto -provisions: tenant record, isolated data scope, default SMS templates, academic 
+year config  
+• Institute Admin receives automated welcome email with login credentials and onboarding 
+checklist URL  
+• Subdomain must be unique, URL -safe, lowercase, maximum 50 characters  
+FR-TENANT -002: Plan Management  
+• Super Admin can upgrade or downgrade a tenant's plan at any time  
+• Downgrade enforces new limits immediately — student count checked, excess blocked  
+• Individual feature flags can be toggled per tenant (e.g., enable exam module for Starter plan 
+during trial)  
+--- Page 19 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 19 FR-TENANT -003: Tenant Status Control  
+• Status values: trial (default, 60 days), active, suspended  
+• Suspended tenants: all users blocked from login; data preserved in full  
+• Super Admin impersonation: full audit trail with start/end time, actions taken, reason  
+ 
+6.3 Student Admission Module  
+FR-STUDENT -001: Inquiry Management  
+• Front Desk creates inquiry record: full name, phone, email, course interest, lead source  
+• Auto SMS sent to prospective student on inquiry creation (configurable template)  
+• Inquiry status workflow: New → Contacted → Interested → Converted / Lost  
+• Conversion analytics dashboard: inquiry -to-admission conversion rate per time period  
+FR-STUDENT -002: Full Admission Form  
+The admission form captures all Nepal -specific fields mandatory for Loksewa institutes:  
+Field Group  Fields  
+Personal  Full name, Date of birth (BS and AD dual entry), Gender, Blood group, 
+Phone, Email  
+Identification  Citizenship number, National ID number (optional)  
+Address  Permanent address: province, district, local level, ward; Temporary 
+address: same fields  
+Family  Father's name, Husband's name (optional), Guardian name and relation  
+Academic  Highest qualification, Institution, Year of passing (JSON array for multiple 
+qualifications)  
+Course  Course selection (with Loksewa categories), Batch selection (shift: 
+Morning/Day/Evening)  
+Fee Fee plan assignment: full payment or installment schedule with due dates  
+Documents  Citizenship copy (front + back), PP photo, Academic certificates (multiple 
+file upload)  
+FR-STUDENT -003: Auto -Generation on Admission  
+• Roll number auto -generated: format [InstCode] -[Year] -[CourseCode] -[Seq] (e.g., HL -2081 -KH-
+001) 
+• Student login credentials auto -generated and included in welcome communication  
+• Digital ID card PDF auto -generated using Python reportlab with QR code and institute branding  
+• Welcome SMS sent to student with roll number, login URL, and first fee due date  
+• Guardian notification SMS: roll number and first fee due date  
+FR-STUDENT -004: Document Management  
+• All uploaded files: MIME type server -side verification + ClamAV virus scan before S3 storage  
+• Files stored in private Wasabi/S3 bucket with signed URL access (15 -minute expiry)  
+• Document verification status tracked: Pending / Verified / Rejected per document type  
+• Enrollment cap enforced: system checks available seats before confirming admission  
+--- Page 22 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 22 • Download count tracking per material  
+FR-LMS -002: Assignments  
+• Teacher creates assignment: title, description, due date, maximum marks, optional file 
+attachments  
+• Student submits assignment: file upload, submission tracked with is_late flag if past due date  
+• Teacher grades: marks_awarded, written feedback per submission  
+• Student views: grade, feedback, submission confirmation  
+FR-LMS -003: Online Classes  
+• Teacher creates online class link per batch: Jitsi Meet (default, free), Google Meet, or Zoom 
+(configurable)  
+• Students access class link from Today's Classes dashboard widget and My Classes section  
+• Class links archived in timetable history for catch -up access  
+ 
+6.8 Communication Module  
+FR-COMM -001: SMS Broadcasting  
+• Admin and Front Desk can send SMS to: individual student, selected batch, entire institute  
+• SMS template library: pre -configured templates for common notifications  
+• Dual-gateway system: Sparrow SMS (primary) → Aakash SMS (auto -failover if Sparrow fails)  
+• Nepali Unicode SMS support on both gateways — messages in Devanagari script if required  
+• Full SMS audit log: recipient, message, template, gateway, delivery status, timestamp  
+FR-COMM -002: Email Campaigns  
+• Admin sends HTML email campaigns to student and/or guardian mailing lists  
+• Mailgun integration with delivery tracking, open analytics, bounce handling  
+• Merge tags: student name, roll number, fee due date, institute name  
+FR-COMM -003: In -App Notifications  
+• Notification centre for each role: list of unread notifications with read/unread status  
+• Guardian can send message to institute admin via in -app thread; admin responds from 
+Communication module  
+ 
+6.9 Library Module (Phase 2)  
+• Book catalogue: accession number, title, author, ISBN, subject, total copies, available copies, 
+shelf location  
+• Book issue: linked to student, issue date, due date, condition noted on issue  
+• Return tracking: return date, condition on return, fine calculation based on overdue days  
+• SMS reminder sent to student for overdue books (configurable trigger day)  
+• Library stock report: available vs. issued vs. overdue per title  
+ 
+--- Page 23 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 23 6.10 Reporting Module  
+FR-REPORT -001: PHP -Generated Reports (Phase 1)  
+• Fee receipt: Python weasyprint HTML→PDF with institute branding  
+• Student ID card: Python reportlab PDF with QR code  
+• Daily fee collection summary: PHP DomPDF — admin and front desk  
+FR-REPORT -002: Python Excel Reports (Phase 2)  
+• Fee collection report: by date range, batch, payment mode — multi -sheet Excel with summary 
+and detail tabs  
+• Attendance report: by student, by batch, by date range — with percentage calculations  
+• Exam performance report: scores, ranks, question analysis, performance trend charts  
+• Custom report builder: admin -configurable field selection and date range (Phase 3)  
+PHP triggers Python via Artisan command and subprocess. Python generates the file, stores it in temp 
+S3, and returns the signed URL to the PHP process for download.  
+ 
+6.11 Dashboard Specifications  
+Super Admin Dashboard Widgets  
+• Total Active Tenants — count with +N this month badge  
+• Active Subscriptions — breakdown by plan tier (Starter / Growth / Professional / Enterprise)  
+• Monthly Recurring Revenue — bar chart: last 12 months with YoY comparison  
+• System Health — uptime %, API response time p95, queue depth, Redis memory  
+• Recent Signups — last 5 institutes with plan, date, and status  
+• SMS Credits Consumed — platform -wide this month vs. quota  
+• Pending Support Tickets — count with priority breakdown  
+• Failed Login Attempts — security alert panel, last 24 hours  
+Institute Admin Dashboard Widgets  
+• Total Active Students — count with batch -wise breakdown sparkline  
+• Today's Attendance — % present across all batches with per -batch cards  
+• Today's Fee Collection — NPR total with Cash vs. Bank breakdown, week trend  
+• Outstanding Dues — total NPR unpaid with aging chart (0 –30 / 31 –60 / 60+ days)  
+• New Inquiries Today — count with pending follow -up count  
+• Upcoming Exams — next 3 scheduled exams with batch and enrollment count  
+• Monthly Enrollment Trend — bar chart: last 6 months  
+• Recent Activity Log — last 10 system actions with actor name  
+Front Desk Dashboard Widgets  
+• Today's Admissions, Today's Fee Collection, Pending Inquiries (follow -up due today)  
+• Outstanding Dues, Documents Pending Verification, Library Books Overdue  
+Teacher Dashboard Widgets  
+• Today's Classes — schedule cards with batch name, time, room/link, attendance status  
+--- Page 25 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 25 SECTION 7 — COMPLETE USER FLOW SPECIFICATIONS  
+ 
+7.1 Institute Onboarding Flow  
+7. Super Admin creates institute account: name, subdomain, plan assignment, primary admin 
+email  
+8. System auto -provisions: tenant record, isolated data scope, default SMS templates, academic 
+year config  
+9. Institute Admin receives welcome email with login credentials and onboarding checklist link  
+10. Admin completes setup wizard: upload logo, set institute address, configure BS/AD academic 
+year 
+11. Admin creates courses (with Loksewa categories), fee items, and first batch  
+12. Admin creates teacher accounts and assigns subjects and batches  
+13. Admin creates front desk operator account(s)  
+14. PWA is installable immediately at [subdomain].hamrolabs.com.np  
+15. First student admission can be processed — institute is live  
+ 
+7.2 Student Admission Flow  
+16. Walk -in or online inquiry received → Front Desk creates inquiry record (name, contact, course 
+interest, lead source)  
+17. Auto SMS sent to prospective student: 'Thank you for your interest in [Institute Name]...'  
+18. Counselling appointment scheduled; inquiry status updated to Contacted  
+19. Student attends counselling → status updated to Interested or Converted  
+20. Front Desk opens full admission form capturing all Nepali fields  
+21. Course and batch selected — system checks available seats and enforces enrollment cap  
+22. Fee plan assigned: full payment or installment schedule configured  
+23. Documents uploaded: citizenship copy (front/back), PP photo, academic certificates — ClamAV 
+scanned, stored in private S3  
+24. System auto -generates: unique roll number, student login credentials, and digital ID card PDF  
+25. Welcome SMS + Email sent to student with roll number, login URL, and first fee due date  
+26. Guardian notification SMS: roll number + fee due date  
+27. Student can log in immediately and access timetable, study materials, and academic calendar  
+ 
+7.3 Teacher Daily Workflow  
+28. Teacher logs in → Teacher Dashboard shows today's class schedule  
+29. Opens Mark Attendance for first class → batch student list pre -populated  
+30. Marks each student: Present / Absent / Late / Excused — single tap on mobile PWA  
+31. Auto SMS sent to guardian for any student marked Absent (if enabled)  
+32. Teacher uploads lesson plan: topic, objectives, resources, homework assigned  
+33. Uploads study material (PDF notes, video link) — tagged to Course > Subject > Chapter  
+34. Reviews pending assignment submissions → grades with marks and written feedback  
+35. Adds MCQ questions to question bank (status: Pending Admin Approval)  
+--- Page 26 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 26 36. Admin approves questions → teacher creates exam: duration, marks, negative marking, batch 
+restriction  
+37. Exam goes live at scheduled datetime, auto -closes on end time  
+38. Results auto -calculated → teacher views class performance summary and question difficulty 
+analysis  
+ 
+7.4 Fee Collection Flow  
+39. Front Desk opens Fee Collection screen → searches student by name or roll number  
+40. Student's fee plan displayed: all installments with due dates, paid amounts, balance  
+41. Selects installment(s) to collect — can record partial payment with running balance  
+42. Records payment mode: Cash / Bank Transfer / Cheque (eSewa/Khalti in Phase 3)  
+43. System generates sequential receipt number (RCP -YYYY -XXXX) — immutable audit trail  
+44. PDF receipt generated via Python weasyprint: institute logo, student name, roll number, course, 
+amount, cashier, BS/AD date  
+45. Receipt auto -emailed to student; printable A5 PDF for physical copy  
+46. Outstanding dues dashboard updates in real time  
+47. If fee due date passes: configured late fine auto -applied per day  
+48. If dues exceed threshold: exam access blocked until cleared (admin -configurable toggle)  
+49. 7-day, 3 -day, and on -due-date SMS reminders sent automatically via queue  
+ 
+7.5 Exam Performance Tracking Flow  
+50. Student completes online MCQ mock exam → instant result: score, percentage, rank, time 
+taken  
+51. Student can review question -by-question: correct answer, explanation, own answer highlighted  
+52. System calculates: batch rank, percentile among all exam takers institute -wide per mock set  
+53. Teacher views class performance summary: average score, question difficulty analysis, pass/fail 
+breakdown  
+54. Admin views institute -wide leaderboard per exam type  
+55. Student dashboard shows performance trend: score trajectory across last N exams  
+56. Weak subject identification: subjects where student scores below batch average flagged  
+57. Python xlsxwriter generates detailed exam performance report with charts — downloadable by 
+admin and teacher  
+58. Guardian receives SMS notification with child's score after each exam (configurable)  
+ 
+7.6 Guardian Monitoring Flow  
+59. Guardian receives login credentials at admission (email + SMS with temporary password)  
+60. Logs in to Guardian Dashboard — sees linked child's data only  
+61. Views attendance summary: monthly percentage, history calendar, leave applications  
+62. Views exam results: scores, ranks, subject -wise breakdown, trend chart  
+63. Views fee status: outstanding dues, payment history, next installment due date, receipt 
+download  
+--- Page 28 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 28 SECTION 8 — DATABASE DESIGN AND SCHEMA  
+ 
+8.1 Migration Order (Must Follow Exactly)  
+Migrations must run in dependency order. Creating a table that references another requires that 
+referenced table to exist first. The following sequence is mandatory:  
+Order  Migration File  Why This Order  
+1 create_tenants_table  Everything depends on this — root record  
+2 create_users_table  All 6 roles live here; requires tenant_id FK  
+3 create_courses_table  Batches depend on courses  
+4 create_batches_table  Students depend on batches  
+5 create_students_table  Depends on users + batches + tenants  
+6 create_guardians_table  Depends on students + users  
+7 create_fee_items_table  Fee records depend on fee items  
+8 create_fee_records_table  Depends on students + fee items  
+9 create_attendances_table  Depends on students + batches  
+10 create_teachers_table  Depends on users  
+11 create_batch_subject_allocations_table  Depends on batches + teachers  
+12 create_timetable_slots_table  Depends on batches + teachers  
+13 create_exams_table  Depends on batches + courses  
+14 create_questions_table  Depends on teachers  
+15 create_exam_questions_table  Depends on exams + questions  
+16 create_exam_attempts_table  Depends on exams + students  
+17 create_assignments_table  Depends on batches + teachers  
+18 create_assignment_submissions_table  Depends on assignments + students  
+19 create_study_materials_table  Depends on courses  
+20 create_library_books_table  Independent (tenant -scoped)  
+21 create_library_issues_table  Depends on library_books + students  
+22 create_notifications_table  Depends on users  
+23 create_sms_logs_table  Independent — track all SMS  
+24 create_audit_logs_table  Independent — log all actions  
+ 
+8.2 Core Table Schemas  
+tenants  
+Root record per institute. All data scoped to this.  
+--- Page 29 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 29 Column  Type & Constraints  Description  
+id bigint unsigned, PK, auto -increment  Unique tenant identifier  
+name  varchar(255), not null  Institute display name  
+subdomain  varchar(255), not null, unique  URL subdomain — routing key  
+logo_path  varchar(500), nullable  S3 path to institute logo  
+phone  varchar(20), nullable  Primary contact phone  
+address  text, nullable  Physical address  
+province  varchar(100), nullable  Province in Nepal  
+plan enum: starter, growth, professional, 
+enterprise; default: starter  Subscription plan tier  
+status  enum: active, suspended, trial; 
+default: trial  Account lifecycle status  
+student_limit  int unsigned, default: 100  Max students per plan  
+sms_credits  int unsigned, default: 500  Remaining SMS balance  
+trial_ends_at  timestamp, nullable  Trial expiry datetime  
+created_at / 
+updated_at  timestamps  Laravel auto -managed  
+deleted_at  timestamp, nullable  Soft delete support  
+ 
+users  
+Authentication record for all 6 roles. Central identity table.  
+Column  Type & Constraints  Description  
+id bigint unsigned, PK, auto -increment  User identifier  
+tenant_id  bigint unsigned, FK → tenants(id), 
+not null  Tenant scoping (null for Super Admin)  
+role enum: super_admin, admin, 
+front_desk, teacher, student, 
+guardian; not null  User role — controls dashboard and 
+permissions  
+email  varchar(255), not null, unique per 
+tenant_id  Login email  
+password_hash  varchar(255), not null  bcrypt hash, cost factor 12 minimum  
+phone  varchar(20), nullable  Phone for 2FA OTP  
+status  enum: active, inactive, suspended; 
+default: active  Account status  
+last_login_at  timestamp, nullable  Last successful authentication  
+two_fa_enabled  boolean, default: false  2FA status — mandatory for admin 
+roles 
+created_at / 
+updated_at  timestamps  Laravel auto -managed  
+ 
+--- Page 30 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 30 students  
+Full Nepali admission form data. Central academic entity.  
+Column  Type & Constraints  Description  
+id bigint unsigned, PK  Student identifier  
+tenant_id  bigint unsigned, FK → tenants(id), 
+not null  Tenant isolation key  
+user_id  bigint unsigned, FK → users(id)  Linked auth record  
+roll_no  varchar(50), unique per tenant_id  Auto-generated roll number  
+full_name  varchar(255), not null  Student full name  
+dob_ad  date, not null  Date of birth (Gregorian)  
+dob_bs  varchar(20), not null  Date of birth (Bikram Sambat)  
+gender  enum: male, female, other  Gender  
+blood_group  varchar(5), nullable  Blood group (A+, O -, etc.)  
+citizenship_no  varchar(50), encrypted, nullable  AES-256 encrypted PII  
+national_id  varchar(50), encrypted, nullable  National identity number  
+father_name  varchar(255), nullable  Father's full name  
+husband_name  varchar(255), nullable  Husband's full name  
+permanent_address  JSON, not null  province, district, local_level, ward  
+temporary_address  JSON, nullable  Same structure as permanent  
+academic_qualifications  JSON, not null  Array of {degree, institution, year, 
+grade}  
+photo_url  varchar(500), nullable  S3 path to passport photo  
+status  enum: active, alumni, dropped; 
+default: active  Academic status  
+created_at / updated_at  timestamps  Laravel auto -managed  
+deleted_at  timestamp, nullable  Soft delete  
+ 
+fee_records  
+Installment billing with immutable receipt numbers. Financial audit trail.  
+Column  Type & Constraints  Description  
+id bigint unsigned, PK  Record identifier  
+tenant_id  bigint unsigned, FK → tenants(id), 
+not null  Tenant isolation  
+student_id  bigint unsigned, FK → 
+students(id), not null  Linked student  
+fee_item_id  bigint unsigned, FK → 
+fee_items(id), not null  Fee type reference  
+installment_no  tinyint unsigned, not null  Installment sequence number  
+--- Page 32 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 32 Index  Columns  Purpose  
+idx_attendance_tenant_student  (tenant_id, student_id)  Per-student attendance queries  
+idx_attendance_tenant_batch_date  (tenant_id, batch_id, date)  Daily/batch attendance reports  
+idx_fee_records_tenant_student  (tenant_id, student_id)  Student fee history queries  
+idx_fee_records_tenant_due_date  (tenant_id, due_date)  Overdue fee queries  
+idx_exam_attempts_tenant_exam  (tenant_id, exam_id)  Exam result aggregation  
+idx_batch_students_tenant_batch  (tenant_id, batch_id)  Batch enrollment queries  
+idx_tenants_subdomain  (subdomain) UNIQUE  Tenant routing lookup — every 
+request  
+idx_fee_records_receipt_no  (receipt_no) UNIQUE  Receipt audit trail integrity  
+idx_students_roll_no  (roll_no, tenant_id) UNIQUE  Duplicate prevention  
+idx_timetable_tenant_batch_day  (tenant_id, batch_id, 
+day_of_week)  Daily schedule queries  
+ 
+8.4 Migration Rules (Non -Negotiable)  
+• NEVER modify a migration file after it has been run on any machine — create a NEW migration 
+for changes  
+• Every table except tenants must have: tenant_id unsignedBigInteger with foreign key 
+referencing tenants(id) ON DELETE CASCADE  
+• Every table must have timestamps() — created_at and updated_at are free and always useful  
+• Every table storing user -created data must have softDeletes() — records are never truly 
+deleted, only hidden  
+• Name migrations precisely: create_students_table NOT students or add_students  
+ 
+  
+--- Page 33 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 33 SECTION 9 — SECURITY REQUIREMENTS  
+ 
+9.1 Authentication and Authorization  
+• JWT: 8 -hour access token + 30 -day refresh token. Refresh tokens rotated on every use. Token 
+invalidated immediately on logout.  
+• RBAC enforced at middleware layer: role extracted from JWT payload, permission matrix 
+checked before controller execution  
+• 2FA via OTP SMS (Sparrow SMS) mandatory for Super Admin and Institute Admin accounts  
+• Rate limiting: 5 failed login attempts per IP per 15 minutes → CAPTCHA challenge required  
+• Session management: stateless design (sessions in Redis, not server memory) — supports 
+horizontal scaling  
+ 
+9.2 Data Isolation  
+• Laravel Global Scope applied to all Eloquent models: every DB query automatically includes 
+WHERE tenant_id = ? clause  
+• Middleware validates JWT tenant_id matches requested resource tenant — no cross -tenant 
+access possible  
+• Enterprise plan option: dedicated MySQL instance for complete physical data isolation  
+• No shared application state between tenants: Redis keys prefixed with tenant_id  
+ 
+9.3 Encryption  
+• All data in transit: HTTPS with TLS 1.3 minimum. Cloudflare enforces HTTPS at edge.  
+• Student PII at rest: AES -256 encryption for citizenship number, national ID, and address fields  
+• Document storage: private S3/Wasabi bucket with server -side AES -256 encryption. Signed 
+URLs with 15 -minute expiry.  
+• Passwords: bcrypt hashed, cost factor 12 minimum — never stored, never logged  
+ 
+9.4 Audit Logging  
+• All Admin create/update/delete actions logged: audit_logs table with user_id, IP, timestamp, 
+table name, record_id, JSON diff of old vs. new values  
+• Super Admin impersonation sessions fully logged with start/end time, actions taken, and reason  
+• SMS logs: full delivery status trail per message (gateway, status, timestamp, recipient number)  
+• File access logs: every document download with signed URL tracked by student/staff user  
+• Audit logs are immutable — no user including Super Admin can delete audit records  
+ 
+9.5 Input Validation and Attack Prevention  
+• SQL injection: Laravel Eloquent ORM with parameterized queries exclusively. Raw SQL queries 
+strictly prohibited in codebase.  
+--- Page 34 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 34 • XSS: all user inputs sanitized server -side. Content Security Policy headers on all pages.  
+• File uploads: MIME type server -side verification (extension alone is insufficient). ClamAV virus 
+scan before S3 storage.  
+• CSRF: Laravel CSRF protection enabled on all state -changing requests  
+• Mass assignment protection: Laravel fillable/guarded defined on all models  
+• Penetration testing: scheduled every 6 months (pre -launch mandatory, then annually)  
+ 
+9.6 Backup and Disaster Recovery  
+Parameter  Specification  
+Backup frequency  Every 6 hours via DigitalOcean Managed Database  
+Daily backup retention  7-day rolling  
+Weekly backup retention  4-week rolling snapshots  
+Monthly backup retention  12-month archives  
+File storage versioning  S3/Wasabi versioning enabled with 30 -day version retention  
+Recovery Time Objective 
+(RTO)  4 hours maximum  
+Recovery Point Objective 
+(RPO)  6 hours maximum  
+DR region  Primary: Mumbai ap -south -1 | Replica: Singapore ap -southeast -1 
+Backup restoration testing  Monthly by Super Admin — documented test log maintained  
+ 
+  
+--- Page 37 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 37 SECTION 11 — API AND ROUTE ARCHITECTURE  
+ 
+11.1 Route Structure  
+All web routes are organized in routes/web.php by role groups with appropriate middleware chains. Every 
+role group receives a URL prefix and a named route prefix for reverse routing.  
+Route Group  URL Prefix  Middleware Stack  Named Prefix  
+Public (No Auth)  / none — 
+Super Admin  /super -admin  auth, role:super -admin  super -admin.  
+Institute Admin  /admin  auth, role:admin, tenant.active  admin.  
+Front Desk  /front -desk auth, role:front -desk, 
+tenant.active  front-desk.  
+Teacher  /teacher  auth, role:teacher, 
+tenant.active  teacher.  
+Student  /student  auth, role:student, 
+tenant.active  student.  
+Guardian  /guardian  auth, role:guardian, 
+tenant.active  guardian.  
+PWA Mobile API  /api auth:sanctum, tenant.active  api. 
+ 
+11.2 Key API Endpoints (PWA Mobile)  
+Method  Endpoint  Role Description  
+POST  /api/auth/login  All Login — returns JWT access + refresh 
+tokens  
+POST  /api/auth/refresh  All Refresh access token using refresh 
+token  
+POST  /api/auth/logout  All Invalidate both tokens  
+GET /api/attendance/batch/{id}  Teacher  Get student list for batch attendance  
+POST  /api/attendance/mark  Teacher  Bulk mark attendance for a class 
+session  
+GET /api/student/timetable  Student  Get student's timetable for current week  
+GET /api/exam/{id}/questions  Student  Get exam questions (exam must be 
+active)  
+POST  /api/exam/{id}/submit  Student  Submit exam answers for evaluation  
+GET /api/student/dashboard  Student  Dashboard KPI data for student  
+GET /api/guardian/child/summary  Guardian  Child's attendance, exam, fee summary  
+ 
+11.3 Standard API Response Format  
+--- Page 39 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 39 SECTION 12 — SUBSCRIPTION PLANS AND FEATURE GATING  
+ 
+12.1 Plan Tiers and Feature Matrix  
+Feature  Starter  Growth  Professional  Enterprise  
+Student Limit  Up to 150  Up to 500  Up to 1,500  Unlimited (multi -branch)  
+Admin Accounts  1 3 10 Unlimited  
+Front Desk & Admissions  ✅ ✅ ✅ ✅ + custom admission 
+fields  
+Fee Management  ✅ ✅ ✅ ✅ + eSewa/Khalti 
+integration  
+Attendance Tracking  ✅ ✅ ✅ ✅ + biometric 
+integration option  
+Basic PDF Reports  ✅ ✅ ✅ ✅ 
+Exam / Mock Test Engine  ❌ ✅ ✅ ✅ + AI weak -subject 
+detection  
+LMS (Materials & 
+Assignments)  ❌ ✅ ✅ ✅ + video streaming 
+(HLS)  
+Library Module  ❌ ✅ ✅ ✅ 
+Python Excel Reports  ❌ ❌ ✅ ✅ + custom report 
+templates  
+SMS Included / Month  500 2,000  5,000  Custom negotiated  
+Guardian Portal  ❌ ✅ ✅ ✅ 
+API Access  ❌ ❌ ✅ ✅ + dedicated 
+instance option  
+White -label Domain  ❌ ❌ Add-on ✅ Included  
+Uptime SLA  99.5%  99.5%  99.7%  99.9% with 4hr 
+response SLA  
+ 
+12.2 Feature Gating Logic  
+• Feature gates enforced at middleware level: JWT token payload includes plan_id; controller 
+checks feature flag against plan before serving the route  
+• Super Admin can toggle individual features per tenant (e.g., enable Exam module for Starter 
+plan during trial extension)  
+• Student count limit: at 90% of limit, admin receives warning; at 100%, new admissions blocked 
+with upgrade prompt  
+• SMS credit tracking: real -time deduction per message sent; at 20% remaining, admin alert sent; 
+at 0%, SMS queue pauses with upgrade or top -up prompt  
+ 
+--- Page 45 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 45 SECTION 14 — DEVELOPMENT ROADMAP  
+ 
+14.1 Phase 2 — Academic and Exam Core (Months 4 –6) 
+Goal: Full commercial launch with academic delivery, mock tests, and advanced reporting.  
+Role Count  Responsibility  
+Senior PHP/Laravel Developer  1 Exam engine, LMS, teacher module, Guardian portal  
+Junior PHP Developer  1 Library, calendar, timetable, notification system  
+Python Developer  1 Excel report engine: fee, attendance, exam charts  
+Frontend Developer  1 Exam UI, Teacher/Guardian dashboards, LMS views  
+QA Engineer  1 Exam engine stress testing, payment gateway testing  
+• Timetable builder with drag -and-drop, conflict detection, and substitute teacher assignment  
+• Academic calendar with Nepal public holidays, BS/AD dual display, and iCal export  
+• Full MCQ exam engine: question bank with teacher→admin approval workflow, exam config, 
+randomization, anti -cheat, auto -evaluation, ranking  
+• LMS: study materials library (hierarchical), assignment submission with late tracking, online 
+class links  
+• Library module: book catalogue, issue/return, fine calculation, SMS reminder  
+• Teacher module: salary tracking, subject allocation, performance analytics  
+• Guardian portal: read -only child monitoring with attendance, exam, and fee views  
+• Python advanced Excel reports: fee collection, attendance, exam performance with charts  
+• eSewa/Khalti payment gateway integration (online fee payment)  
+ 
+14.2 Phase 3 — Scale and Intelligence (Months 7 –12) 
+Goal: Enterprise features, AI integration, video LMS, and multi -branch support.  
+Role Count  Responsibility  
+Senior PHP Developer (Lead)  1 API layer, multi -branch architecture, enterprise features  
+Python/ML Developer  1 AI models: weak subject detection, performance 
+prediction, bulk import  
+DevOps Engineer  1 AWS migration, auto -scaling, HLS streaming infra, 
+CDN 
+Frontend Developer  1 Nepali UI localization, video player, analytics 
+dashboards  
+QA Engineer  1 API testing, load testing (500+ concurrent exam users), 
+security audit  
+• Video lecture management: S3/Wasabi storage, HLS adaptive streaming, watch progress 
+tracking  
+• AI weak -subject identification: Python ML model trained on exam attempt data → auto -
+recommend study materials  
+• AI performance prediction: student pass/fail probability based on attendance + mock test history  
+• Multi -branch support: consolidated admin dashboard across 3+ locations  
+--- Page 47 ---
+HamroLabs Academic ERP — Software Requirements Specification  
+ v1.0 | Confidential  
+Hamro Labs Pvt. Ltd. | Nepal 2025 | Internal Development Use Only  
+ Page 47 SECTION 15 — APPENDIX  
+ 
+15.1 Technology Package Registry  
+PHP/Laravel Packages (Install Before Any Application Code)  
+Package  Command  Purpose  
+Laravel Sanctum  composer require 
+laravel/sanctum  Authentication — stateful for web, token 
+for PWA  
+Maatwebsite Excel  composer require 
+maatwebsite/excel  Excel reports (replaces Python xlsxwriter 
+in simple cases)  
+Laravel DomPDF  composer require 
+barryvdh/laravel -dompdf  Basic PDF reports in Phase 1  
+Spatie Activity Log  composer require spatie/laravel -
+activitylog  Activity and audit logging  
+Spatie Permission  composer require spatie/laravel -
+permission  Role and permission management  
+Spatie Media Library  composer require spatie/laravel -
+medialibrary  Media/file uploads (S3/Wasabi 
+compatible)  
+Nepali Calendar  composer require 
+nepali/calendar  BS/AD date conversion  
+Intervention Image  composer require 
+intervention/image  Image optimization (student ID photos)  
+Alpine.js  npm install alpinejs  Lightweight reactivity — no build 
+complexity  
+Bootstrap 5.3  Included via Laravel default  Verify in package.json  
+ 
+Python Libraries (Report Engine)  
+Library  Purpose  
+openpyxl  Excel file generation with formatting, multi -sheet, formulas  
+xlsxwriter  Advanced Excel with charts, conditional formatting  
+reportlab  Pixel -perfect PDF generation (student ID cards)  
+fpdf2 Nepali Unicode font support in PDFs  
+weasyprint  HTML→PDF conversion for fee receipts  
+pandas  Data manipulation for bulk imports and report aggregation  
+pillow  Image processing (student photos for ID cards)  
+babel  BS/AD date formatting and localization  
+scikit -learn Phase 3 ML models (weak subject detection, performance prediction)  
+ 

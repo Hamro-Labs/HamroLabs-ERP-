@@ -1,0 +1,158 @@
+<?php
+namespace App\Services;
+
+class AttendanceService {
+
+    private $db;
+    private $attendance;
+    private $leaveRequest;
+    private $auditLog;
+    private $settings;
+
+    public function __construct() {
+        $this->db = \DB::connection();
+        $this->attendance = new \App\Models\Attendance();
+        $this->leaveRequest = new \App\Models\LeaveRequest();
+        $this->auditLog = new \App\Models\AttendanceAuditLog();
+        $this->settings = new \App\Models\AttendanceSettings();
+    }
+
+    public function takeAttendance($data, $userId, $tenantId) {
+        // Data format: ['batch_id' => X, 'course_id' => Y, 'attendance_date' => Z, 'attendance' => [['student_id' => 1, 'status' => 'present'], ...]]
+        
+        $records = [];
+        foreach ($data['attendance'] as $item) {
+            $records[] = [
+                'student_id' => $item['student_id'],
+                'batch_id' => $data['batch_id'],
+                'course_id' => $data['course_id'] ?? null, // Can be fetched from batch if not provided
+                'attendance_date' => $data['attendance_date'],
+                'status' => $item['status'],
+                'marked_by' => $userId
+            ];
+        }
+        
+        return $this->attendance->bulkUpsert($records, $tenantId);
+    }
+
+    public function bulkSave($records, $userId, $tenantId) {
+        return $this->attendance->bulkUpsert($records, $tenantId);
+    }
+
+    public function editAttendance($id, $data, $userId, $tenantId) {
+        if (!$this->canEdit($id, $tenantId)) {
+            throw new \Exception("Cannot edit this attendance record, it is locked or past the edit timeframe.");
+        }
+        
+        $oldRecord = $this->attendance->find($id);
+        
+        $this->attendance->update($id, [
+            'status' => $data['status'],
+            'marked_by' => $userId
+        ]);
+        
+        $newRecord = $this->attendance->find($id);
+        
+        $this->auditLog->log([
+            'tenant_id' => $tenantId,
+            'attendance_id' => $id,
+            'user_id' => $userId,
+            'action' => 'updated',
+            'old_values' => $oldRecord,
+            'new_values' => $newRecord
+        ]);
+        
+        return $newRecord;
+    }
+
+    public function lockAttendance($ids, $tenantId) {
+        return $this->attendance->markLocked($ids, true);
+    }
+
+    public function unlockAttendance($ids, $userId, $tenantId) {
+        $result = $this->attendance->markLocked($ids, false);
+        foreach ($ids as $id) {
+            $this->auditLog->log([
+                'tenant_id' => $tenantId,
+                'attendance_id' => $id,
+                'user_id' => $userId,
+                'action' => 'unlocked'
+            ]);
+        }
+        return $result;
+    }
+
+    public function canEdit($attendanceId, $tenantId, $isSuperAdmin = false) {
+        $settings = $this->settings->getByTenant($tenantId);
+        $lockPeriodHours = $settings['lock_period_hours'] ?? 24;
+        
+        $attendance = $this->attendance->find($attendanceId);
+        if (!$attendance) return false;
+        
+        if ($isSuperAdmin) {
+            return true;
+        }
+        
+        if ($attendance['locked']) {
+            return false;
+        }
+        
+        $createdAt = strtotime($attendance['created_at']);
+        $now = time();
+        $hoursDiff = ($now - $createdAt) / 3600;
+        
+        if ($hoursDiff > $lockPeriodHours) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    public function processApprovedLeave($leaveId, $tenantId) {
+        $leave = $this->leaveRequest->find($leaveId);
+        if (!$leave || $leave['status'] !== 'approved') return false;
+        
+        // Fetch student's current batch and course
+        $stmt = $this->db->prepare("SELECT batch_id, course_id FROM students WHERE id = ?");
+        $stmt->execute([$leave['student_id']]);
+        $student = $stmt->fetch();
+        
+        if (!$student || !$student['batch_id']) return false;
+        
+        $start = new \DateTime($leave['from_date']);
+        $end = new \DateTime($leave['to_date']);
+        $end->modify('+1 day');
+        $interval = \DateInterval::createFromDateString('1 day');
+        $period = new \DatePeriod($start, $interval, $end);
+        
+        $records = [];
+        foreach ($period as $dt) {
+            $records[] = [
+                'student_id' => $leave['student_id'],
+                'batch_id' => $student['batch_id'],
+                'course_id' => $student['course_id'],
+                'attendance_date' => $dt->format('Y-m-d'),
+                'status' => 'leave',
+                'marked_by' => $leave['approved_by']
+            ];
+        }
+        
+        return $this->attendance->bulkUpsert($records, $tenantId);
+    }
+
+    public function calculatePercentage($studentId, $batchId, $tenantId, $excludeLeave = true) {
+        $stats = $this->attendance->getStudentStats($studentId, $batchId, $tenantId);
+        if (!$stats || $stats['total_days'] == 0) return 0;
+        
+        $total = $stats['total_days'];
+        $present = $stats['present_days'] + $stats['late_days']; // counting late as present for percentage?
+        
+        if ($excludeLeave) {
+            $total -= $stats['leave_days'];
+        }
+        
+        if ($total <= 0) return 0;
+        
+        return round(($present / $total) * 100, 2);
+    }
+}

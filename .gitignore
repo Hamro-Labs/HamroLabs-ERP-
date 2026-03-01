@@ -1,0 +1,28 @@
+# ERP Project Ignored Files
+
+# Cleanup Plan Exclusions
+tmp_*.php
+scratch.php
+check_*.php
+cleanup.ps1
+
+# Environment and Config
+.env
+/.vscode
+/node_modules
+/vendor
+/storage/*.key
+/storage/framework/cache/data/*
+/storage/framework/views/*.php
+/storage/framework/sessions/*
+/storage/logs/*.log
+/public/storage
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Uploads
+/public/uploads
+/app/public/uploads

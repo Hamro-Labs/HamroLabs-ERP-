@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Student Registration - HamroLabs ERP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="../public/assets/js/nepal-data.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ── BASE STYLES (Same as Quick Registration) ── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --sa-primary: #009E7E;
+            --sa-primary-d: #007a62;
+            --sa-primary-h: #00b894;
+            --sa-primary-lt: #e0f5f0;
+            --navy: #0F172A;
+            --red: #E11D48;
+            --purple: #8141A5;
+            --soft-purple: #F3E8FF;
+            --amber: #d97706;
+            --blue: #3b82f6;
+            --success: #00B894;
+            --warning: #FDCB6E;
+            --danger: #E17055;
+            --bg: #F8FAFC;
+            --cb: #E2E8F0;
+            --td: #1E293B;
+            --tb: #475569;
+            --tl: #94A3B8;
+            --white: #fff;
+            --font: 'Plus Jakarta Sans', sans-serif;
+            --sh: 0 1px 3px rgba(0, 0, 0, .07), 0 1px 2px rgba(0, 0, 0, .04);
+            --shm: 0 4px 16px rgba(0, 0, 0, .08);
+        }
+
+        html {
+            font-size: clamp(14px, 1.25vw, 16px);
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--td);
+            line-height: 1.5;
+            padding: 24px;
+        }
+
+        /* ── CONTAINER ── */
+        .registration-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .1);
+            overflow: hidden;
+        }
+
+        /* ── HEADER ── */
+        .form-header {
+            background: linear-gradient(135deg, var(--sa-primary) 0%, var(--sa-primary-h) 100%);
+            padding: 32px 40px;
+            color: var(--white);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .form-header-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .header-text h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .header-text p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .student-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .student-badge i {
+            margin-right: 6px;
+        }
+
+        /* ── FORM NAVIGATION ── */
+        .form-nav {
+            background: var(--white);
+            border-bottom: 2px solid var(--cb);
+            padding: 0 40px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 16px 20px;
+            background: transparent;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--tl);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            color: var(--sa-primary);
+            background: var(--sa-primary-lt);
+        }
+
+        .nav-tab.active {
+            color: var(--sa-primary);
+            border-bottom-color: var(--sa-primary);
+            background: var(--sa-primary-lt);
+        }
+
+        .nav-tab i {
+            font-size: 16px;
+        }
+
+        .tab-badge {
+            background: var(--cb);
+            color: var(--tb);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .nav-tab.active .tab-badge {
+            background: var(--sa-primary);
+            color: var(--white);
+        }
+
+        /* ── FORM BODY ── */
+        .form-body {
+            padding: 40px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--td);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--cb);
+        }
+
+        .section-title i {
+            font-size: 22px;
+            color: var(--sa-primary);
+        }
+
+        /* ── FORM ELEMENTS ── */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--td);
+            margin-bottom: 8px;
+        }
+
+        .required {
+            color: var(--red);
+        }
+
+        .optional {
+            color: var(--tl);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--cb);
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: var(--font);
+            color: var(--td);
+            transition: all 0.2s;
+            background: var(--white);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--sa-primary);
+            box-shadow: 0 0 0 4px var(--sa-primary-lt);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        select.form-control {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-help {
+            font-size: 11px;
+            color: var(--tl);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ── FILE UPLOAD ── */
+        .file-upload-box {
+            border: 2px dashed var(--cb);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+            background: var(--bg);
+        }
+
+        .file-upload-box:hover {
+            border-color: var(--sa-primary);
+            background: var(--sa-primary-lt);
+        }
+
+        .file-upload-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            background: var(--sa-primary-lt);
+            color: var(--sa-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .file-upload-text {
+            font-size: 13px;
+            color: var(--tb);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .file-upload-hint {
+            font-size: 11px;
+            color: var(--tl);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-preview {
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--sa-primary-lt);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .file-preview-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-preview-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--sa-primary);
+            color: var(--white);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-remove {
+            width: 28px;
+            height: 28px;
+            background: var(--red);
+            color: var(--white);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ── QUALIFICATIONS ── */
+        .qualification-item {
+            background: var(--bg);
+            border: 1px solid var(--cb);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .qualification-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .qualification-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--td);
+        }
+
+        .remove-qualification {
+            width: 32px;
+            height: 32px;
+            background: var(--red);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-qualification {
+            width: 100%;
+            padding: 12px;
+            background: var(--sa-primary-lt);
+            color: var(--sa-primary);
+            border: 2px dashed var(--sa-primary);
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .add-qualification:hover {
+            background: var(--sa-primary);
+            color: var(--white);
+        }
+
+        /* ── NAVIGATION BUTTONS ── */
+        .form-actions {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            padding-top: 24px;
+            border-top: 2px solid var(--cb);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--sa-primary) 0%, var(--sa-primary-h) 100%);
+            color: var(--white);
+            box-shadow: 0 4px 16px rgba(0, 158, 126, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 158, 126, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--tb);
+            border: 2px solid var(--cb);
+        }
+
+        .btn-secondary:hover {
+            background: var(--cb);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .form-body {
+                padding: 24px 20px;
+            }
+
+            .form-nav {
+                padding: 0 20px;
+            }
+
+            .form-row,
+            .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-left {
+                flex-direction: column;
+            }
+
+            .form-actions {
+                flex-direction: column-reverse;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* ── INFO CARD ── */
+        .info-card {
+            background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .info-card-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--blue);
+            color: var(--white);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .info-card-content {
+            flex: 1;
+        }
+
+        .info-card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--blue);
+            margin-bottom: 4px;
+        }
+
+        .info-card-text {
+            font-size: 12px;
+            color: #1e40af;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="registration-container">
+        <!-- Header -->
+        <div class="form-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="form-header-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="header-text">
+                        <h1>Complete Student Registration</h1>
+                        <p>Fill in all required details for full system access</p>
+                    </div>
+                </div>
+                <div class="student-badge">
+                    <i class="fas fa-id-card"></i>
+                    Roll: LOK-2025-001
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="form-nav">
+            <button class="nav-tab active" data-section="basic">
+                <i class="fas fa-user"></i>
+                Basic Info
+                <span class="tab-badge">1</span>
+            </button>
+            <button class="nav-tab" data-section="address">
+                <i class="fas fa-map-marker-alt"></i>
+                Address
+                <span class="tab-badge">2</span>
+            </button>
+            <button class="nav-tab" data-section="education">
+                <i class="fas fa-graduation-cap"></i>
+                Education
+                <span class="tab-badge">3</span>
+            </button>
+            <button class="nav-tab" data-section="documents">
+                <i class="fas fa-file-upload"></i>
+                Documents
+                <span class="tab-badge">4</span>
+            </button>
+            <button class="nav-tab" data-section="review">
+                <i class="fas fa-check-circle"></i>
+                Review
+                <span class="tab-badge">5</span>
+            </button>
+        </div>
+
+        <!-- Form Body -->
+        <div class="form-body">
+            <form id="completeRegistrationForm">
+                <!-- Section 1: Basic Information -->
+                <div class="section active" id="basic">
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <div class="info-card-title">Completing Quick Registration Profile</div>
+                            <div class="info-card-text">
+                                You're completing the profile for: <strong>Sagar Kumar Sharma</strong> (LOK-2025-001).
+                                Basic details have been pre-filled from quick registration.
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="section-title">
+                        <i class="fas fa-user-circle"></i>
+                        Personal Information
+                    </h3>
+
+                    <!-- Pre-filled from Quick Registration -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Full Name <span class="required">*</span>
+                            </label>
+                            <input type="text" class="form-control" value="Sagar Kumar Sharma" readonly
+                                style="background: #f1f5f9;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Contact Number <span class="required">*</span>
+                            </label>
+                            <input type="tel" class="form-control" value="9841234567" readonly
+                                style="background: #f1f5f9;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Email Address <span class="required">*</span>
+                        </label>
+                        <input type="email" class="form-control" value="sagar.sharma@example.com" readonly
+                            style="background: #f1f5f9;">
+                    </div>
+
+                    <!-- New Fields -->
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Date of Birth (AD) <span class="required">*</span>
+                            </label>
+                            <input type="date" class="form-control" name="dob_ad" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Date of Birth (BS) <span class="required">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="dob_bs" placeholder="YYYY-MM-DD"
+                                pattern="\d{4}-\d{2}-\d{2}" required>
+                            <div class="form-help">
+                                <i class="fas fa-info-circle"></i>
+                                Format: 2055-02-01
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Gender <span class="required">*</span>
+                            </label>
+                            <select class="form-control" name="gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Blood Group <span class="optional">(Optional)</span>
+                            </label>
+                            <select class="form-control" name="blood_group">
+                                <option value="">Select Blood Group</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Citizenship Number <span class="optional">(Optional)</span>
+                            </label>
+                            <input type="text" class="form-control" name="citizenship_no" placeholder="12-34-56-78901">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                National ID <span class="optional">(Optional)</span>
+                            </label>
+                            <input type="text" class="form-control" name="national_id" placeholder="NID-2055-123456">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Father's Name <span class="optional">(Optional)</span>
+                            </label>
+                            <input type="text" class="form-control" name="father_name" placeholder="Father's full name">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Husband's Name <span class="optional">(Optional - for married female students)</span>
+                        </label>
+                        <input type="text" class="form-control" name="husband_name" placeholder="Husband's full name">
+                    </div>
+                </div>
+
+                <!-- Section 2: Address Information -->
+                <div class="section" id="address">
+                    <h3 class="section-title">
+                        <i class="fas fa-home"></i>
+                        Permanent Address
+                    </h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Province <span class="required">*</span>
+                            </label>
+                            <select class="form-control" name="permanent_province" id="perm_province" required
+                                onchange="window._updateDistrictSelect(this.value, 'perm_district')">
+                                <option value="">Select Province</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                District <span class="required">*</span>
+                            </label>
+                            <select class="form-control" name="permanent_district" id="perm_district" required>
+                                <option value="">Select District</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Local Level <span class="required">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="permanent_local_level"
+                                placeholder="e.g., Bharatpur Metropolitan City" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Ward Number <span class="required">*</span>
+                            </label>
+                            <input type="number" class="form-control" name="permanent_ward" placeholder="e.g., 5"
+                                min="1" required>
+                        </div>
+                    </div>
+
+                    <h3 class="section-title" style="margin-top: 32px;">
+                        <i class="fas fa-location-arrow"></i>
+                        Temporary Address
+                    </h3>
+
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="sameAsPermament" style="width: 18px; height: 18px;">
+                            <span style="font-size: 13px; font-weight: 600;">Same as Permanent Address</span>
+                        </label>
+                    </div>
+
+                    <div id="temporaryAddressFields">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Province <span class="optional">(Optional)</span>
+                                </label>
+                                <select class="form-control" name="temporary_province" id="temp_province"
+                                    onchange="window._updateDistrictSelect(this.value, 'temp_district')">
+                                    <option value="">Select Province</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    District <span class="optional">(Optional)</span>
+                                </label>
+                                <select class="form-control" name="temporary_district" id="temp_district">
+                                    <option value="">Select District</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Local Level <span class="optional">(Optional)</span>
+                                </label>
+                                <input type="text" class="form-control" name="temporary_local_level"
+                                    placeholder="e.g., Kathmandu Metropolitan City">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Ward Number <span class="optional">(Optional)</span>
+                                </label>
+                                <input type="number" class="form-control" name="temporary_ward" placeholder="e.g., 2"
+                                    min="1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Educational Qualifications -->
+                <div class="section" id="education">
+                    <h3 class="section-title">
+                        <i class="fas fa-graduation-cap"></i>
+                        Academic Qualifications
+                    </h3>
+
+                    <div id="qualificationsContainer">
+                        <!-- Qualification 1 -->
+                        <div class="qualification-item">
+                            <div class="qualification-header">
+                                <span class="qualification-title">
+                                    <i class="fas fa-certificate"></i>
+                                    Qualification #1
+                                </span>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        Degree/Certificate <span class="required">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" name="qualifications[0][degree]"
+                                        placeholder="e.g., Bachelor of Arts" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        Institution <span class="required">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" name="qualifications[0][institution]"
+                                        placeholder="e.g., Tribhuvan University" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        Year of Passing <span class="required">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" name="qualifications[0][year]"
+                                        placeholder="e.g., 2020" min="1980" max="2030" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        Grade/Division <span class="required">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" name="qualifications[0][grade]"
+                                        placeholder="e.g., First Division / GPA 3.5" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="add-qualification" onclick="addQualification()">
+                        <i class="fas fa-plus-circle"></i>
+                        Add Another Qualification
+                    </button>
+                </div>
+
+                <!-- Section 4: Document Upload -->
+                <div class="section" id="documents">
+                    <h3 class="section-title">
+                        <i class="fas fa-file-upload"></i>
+                        Required Documents
+                    </h3>
+
+                    <!-- Passport Photo -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            Passport Size Photo <span class="required">*</span>
+                        </label>
+                        <div class="file-upload-box" onclick="document.getElementById('photoUpload').click()">
+                            <div class="file-upload-icon">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <div class="file-upload-text">Click to upload passport photo</div>
+                            <div class="file-upload-hint">JPG, PNG • Max 2MB • 300x300px recommended</div>
+                        </div>
+                        <input type="file" id="photoUpload" class="file-input" accept="image/*" required>
+                    </div>
+
+                    <!-- Citizenship Front -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            Citizenship Certificate (Front) <span class="optional">(Optional)</span>
+                        </label>
+                        <div class="file-upload-box" onclick="document.getElementById('citizenshipFront').click()">
+                            <div class="file-upload-icon">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <div class="file-upload-text">Click to upload citizenship front</div>
+                            <div class="file-upload-hint">JPG, PNG, PDF • Max 5MB</div>
+                        </div>
+                        <input type="file" id="citizenshipFront" class="file-input" accept="image/*,application/pdf">
+                    </div>
+
+                    <!-- Citizenship Back -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            Citizenship Certificate (Back) <span class="optional">(Optional)</span>
+                        </label>
+                        <div class="file-upload-box" onclick="document.getElementById('citizenshipBack').click()">
+                            <div class="file-upload-icon">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <div class="file-upload-text">Click to upload citizenship back</div>
+                            <div class="file-upload-hint">JPG, PNG, PDF • Max 5MB</div>
+                        </div>
+                        <input type="file" id="citizenshipBack" class="file-input" accept="image/*,application/pdf">
+                    </div>
+
+                    <!-- Academic Certificates -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            Academic Certificates <span class="optional">(Optional)</span>
+                        </label>
+                        <div class="file-upload-box" onclick="document.getElementById('academicCerts').click()">
+                            <div class="file-upload-icon">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <div class="file-upload-text">Click to upload academic certificates</div>
+                            <div class="file-upload-hint">JPG, PNG, PDF • Max 10MB • Multiple files allowed</div>
+                        </div>
+                        <input type="file" id="academicCerts" class="file-input" accept="image/*,application/pdf"
+                            multiple>
+                    </div>
+                </div>
+
+                <!-- Section 5: Review & Submit -->
+                <div class="section" id="review">
+                    <h3 class="section-title">
+                        <i class="fas fa-check-double"></i>
+                        Review & Submit
+                    </h3>
+
+                    <div class="info-card"
+                        style="background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%); border-color: #86efac;">
+                        <div class="info-card-icon" style="background: var(--success);">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <div class="info-card-title" style="color: var(--success);">Ready to Complete Registration
+                            </div>
+                            <div class="info-card-text" style="color: #065f46;">
+                                Please review all information before submitting. After submission:
+                                <ul style="margin: 8px 0 0 20px;">
+                                    <li>Your profile will be marked as "Fully Registered"</li>
+                                    <li>You'll receive a welcome SMS with roll number</li>
+                                    <li>Digital ID card will be generated automatically</li>
+                                    <li>You'll get full access to all system features</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        style="background: var(--bg); border: 1px solid var(--cb); border-radius: 12px; padding: 24px; margin-top: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--td);">
+                            <i class="fas fa-clipboard-check"></i>
+                            Completion Summary
+                        </h4>
+
+                        <div style="display: grid; gap: 12px;">
+                            <div
+                                style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--cb);">
+                                <span style="color: var(--tb);">Basic Information</span>
+                                <span style="color: var(--success); font-weight: 600;">
+                                    <i class="fas fa-check-circle"></i> Complete
+                                </span>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--cb);">
+                                <span style="color: var(--tb);">Address Details</span>
+                                <span style="color: var(--warning); font-weight: 600;">
+                                    <i class="fas fa-clock"></i> Pending
+                                </span>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--cb);">
+                                <span style="color: var(--tb);">Educational Qualifications</span>
+                                <span style="color: var(--warning); font-weight: 600;">
+                                    <i class="fas fa-clock"></i> Pending
+                                </span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+                                <span style="color: var(--tb);">Documents Uploaded</span>
+                                <span style="color: var(--warning); font-weight: 600;">
+                                    <i class="fas fa-clock"></i> Pending
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeSection(-1)">
+                        <i class="fas fa-arrow-left"></i>
+                        Previous
+                    </button>
+                    <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeSection(1)">
+                        Next
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">
+                        <i class="fas fa-check-circle"></i>
+                        Complete Registration
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentSection = 0;
+        const sections = ['basic', 'address', 'education', 'documents', 'review'];
+        let qualificationCount = 1;
+
+        // Tab navigation
+        document.querySelectorAll('.nav-tab').forEach((tab, index) => {
+            tab.addEventListener('click', () => {
+                showSection(index);
+            });
+        });
+
+        // Section navigation
+        function changeSection(direction) {
+            const newSection = currentSection + direction;
+            if (newSection >= 0 && newSection < sections.length) {
+                showSection(newSection);
+            }
+        }
+
+        function showSection(index) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+            // Show target section
+            document.getElementById(sections[index]).classList.add('active');
+            document.querySelectorAll('.nav-tab')[index].classList.add('active');
+
+            currentSection = index;
+
+            // Update buttons
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+
+            prevBtn.style.display = index === 0 ? 'none' : 'flex';
+            nextBtn.style.display = index === sections.length - 1 ? 'none' : 'flex';
+            submitBtn.style.display = index === sections.length - 1 ? 'flex' : 'none';
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Same as permanent address
+        document.getElementById('sameAsPermament').addEventListener('change', function (e) {
+            const tempFields = document.getElementById('temporaryAddressFields');
+            const inputs = tempFields.querySelectorAll('input, select');
+
+            if (e.target.checked) {
+                // Copy values
+                const pProv = document.getElementById('perm_province').value;
+                const pDist = document.getElementById('perm_district').value;
+
+                document.getElementById('temp_province').value = pProv;
+                window._updateDistrictSelect(pProv, 'temp_district');
+                document.getElementById('temp_district').value = pDist;
+
+                document.querySelector('[name="temporary_local_level"]').value = document.querySelector('[name="permanent_local_level"]').value;
+                document.querySelector('[name="temporary_ward"]').value = document.querySelector('[name="permanent_ward"]').value;
+
+                // Disable fields
+                inputs.forEach(input => input.disabled = true);
+                tempFields.style.opacity = '0.5';
+            } else {
+                // Enable fields
+                inputs.forEach(input => input.disabled = false);
+                tempFields.style.opacity = '1';
+            }
+        });
+
+        // Add qualification
+        function addQualification() {
+            qualificationCount++;
+            const container = document.getElementById('qualificationsContainer');
+            const newQual = document.createElement('div');
+            newQual.className = 'qualification-item';
+            newQual.innerHTML = `
+                <div class="qualification-header">
+                    <span class="qualification-title">
+                        <i class="fas fa-certificate"></i>
+                        Qualification #${qualificationCount}
+                    </span>
+                    <button type="button" class="remove-qualification" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Degree/Certificate <span class="required">*</span>
+                        </label>
+                        <input type="text" class="form-control" name="qualifications[${qualificationCount - 1}][degree]" placeholder="e.g., +2 Science" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Institution <span class="required">*</span>
+                        </label>
+                        <input type="text" class="form-control" name="qualifications[${qualificationCount - 1}][institution]" placeholder="e.g., National School" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Year of Passing <span class="required">*</span>
+                        </label>
+                        <input type="number" class="form-control" name="qualifications[${qualificationCount - 1}][year]" placeholder="e.g., 2016" min="1980" max="2030" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Grade/Division <span class="required">*</span>
+                        </label>
+                        <input type="text" class="form-control" name="qualifications[${qualificationCount - 1}][grade]" placeholder="e.g., First Division" required>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newQual);
+        }
+
+        // File upload preview
+        document.querySelectorAll('.file-input').forEach(input => {
+            input.addEventListener('change', function (e) {
+                const files = Array.from(e.target.files);
+                const uploadBox = this.previousElementSibling;
+
+                if (files.length > 0) {
+                    uploadBox.style.borderColor = 'var(--success)';
+                    uploadBox.style.background = '#dcfce7';
+                }
+            });
+        });
+
+        // Form submission
+        document.getElementById('completeRegistrationForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            submitBtn.disabled = true;
+
+            // Simulate API call
+            setTimeout(() => {
+                alert('Registration completed successfully!\n\n✓ Profile marked as Fully Registered\n✓ Roll Number: LOK-2025-001\n✓ Digital ID Card generated\n✓ Welcome SMS sent\n✓ Full system access granted');
+
+                // Reset button
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Complete Registration';
+                submitBtn.disabled = false;
+
+                // Redirect to student dashboard
+                // window.location.href = '/student/dashboard';
+            }, 2000);
+        });
+
+        // Initialize Nepal Data
+        if (window._populateProvinceSelect) {
+            window._populateProvinceSelect('perm_province');
+            window._populateProvinceSelect('temp_province');
+        }
+
+        // Initialize
+        showSection(0);
+    </script>
+</body>
+
+</html>

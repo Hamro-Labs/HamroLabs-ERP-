@@ -1,0 +1,312 @@
+/* 
+  Hamro ERP — ia-students-premium.css
+  Modern UI/UX for Student Directory
+*/
+
+:root {
+    --student-card-bg: rgba(255, 255, 255, 0.7);
+    --student-glass-border: rgba(255, 255, 255, 0.4);
+    --student-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+/* Glassmorphism Stat Cards */
+.student-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.student-stat-card {
+    background: var(--student-card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--student-glass-border);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: var(--student-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.student-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12);
+}
+
+.stat-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.stat-icon-box.teal {
+    background: rgba(20, 184, 166, 0.1);
+    color: #14b8a6;
+}
+
+.stat-icon-box.blue {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.stat-icon-box.purple {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+}
+
+.stat-icon-box.amber {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.stat-icon-box.red {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.stat-info .stat-label {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.stat-info .stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+/* Modern Filter Bar */
+.premium-filter-bar {
+    background: var(--student-card-bg);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--student-glass-border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 25px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    box-shadow: var(--student-shadow);
+}
+
+.premium-search-input {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+}
+
+.premium-search-input i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.premium-search-input input {
+    width: 100%;
+    padding: 12px 15px 12px 45px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.premium-search-input input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+/* Enhanced Table */
+.premium-student-table {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--student-shadow);
+}
+
+.premium-student-table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.premium-student-table tbody tr {
+    transition: background 0.2s;
+}
+
+.premium-student-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.premium-student-table td {
+    padding: 16px 20px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Action Buttons Container */
+.premium-row-acts {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.premium-row-acts .act-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.act-btn.act-view {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.act-btn.act-edit {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.act-btn.act-pay {
+    background: #fff7ed;
+    color: #f59e0b;
+}
+
+.act-btn.act-email {
+    background: #f5f3ff;
+    color: #8b5cf6;
+}
+
+.act-btn.act-delete {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.act-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    filter: brightness(0.95);
+}
+
+/* Fee Status Pills Re-styling */
+.fee-pill {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+}
+
+.fee-pill.paid {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.fee-pill.overdue {
+    background: #fee2e2;
+    color: #991b1b;
+    animation: pulse-red 2s infinite;
+}
+
+.fee-pill.partial {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.fee-pill.no_fees {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+/* Student Info Flex */
+.premium-s-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.s-av {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.s-details .s-name {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+
+.s-details .s-meta {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+/* Batch/Course Box */
+.premium-batch-box {
+    background: #f1f5f9;
+    padding: 8px 12px;
+    border-radius: 10px;
+    display: inline-block;
+}
+
+.premium-batch-box .batch-name {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #334155;
+    margin-bottom: 2px;
+}
+
+.premium-batch-box .course-tag {
+    font-size: 0.7rem;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 600;
+}

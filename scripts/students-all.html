@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>All Students — HamroLabs ERP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+
+  <style>
+    /* ── PASTE YOUR super-admin.css HERE ── */
+    /* ── RESET & BASE ── */
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow-x:hidden}
+    body{overflow-y:scroll}
+    .root{display:block!important;height:auto!important;min-height:100vh;overflow:visible!important}
+
+    :root{
+      --sa-primary:#009E7E;--sa-primary-d:#007a62;--sa-primary-h:#00b894;--sa-primary-lt:#e0f5f0;
+      --navy:#0F172A;--red:#E11D48;--purple:#8141A5;--soft-purple:#F3E8FF;--amber:#d97706;
+      --blue:#3b82f6;--success:#00B894;--warning:#FDCB6E;--danger:#E17055;
+      --bg:#F8FAFC;--cb:#E2E8F0;--td:#1E293B;--tb:#475569;--tl:#94A3B8;--white:#fff;
+      --sb-w:260px;--hh:56px;
+      --font:'Plus Jakarta Sans',sans-serif;
+      --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+      --shm:0 4px 16px rgba(0,0,0,.08)
+    }
+
+    html{font-size:clamp(14px,1.25vw,16px)}
+    body{font-family:var(--font);background:var(--bg);color:var(--td);line-height:1.5;-webkit-tap-highlight-color:transparent}
+
+    /* ── HEADER ── */
+    .hdr{position:fixed;top:0;left:0;right:0;height:var(--hh);z-index:1000;background:var(--sa-primary);display:flex;align-items:center;padding:0 12px;box-shadow:0 2px 8px rgba(0,158,126,.35);color:#fff}
+    .hdr-left{display:flex;align-items:center;gap:12px}
+    .sb-toggle{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.15);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:18px;transition:background .2s}
+    .sb-toggle:hover{background:rgba(255,255,255,.25)}
+    .hdr-logo-box{display:flex;align-items:center;gap:8px}
+    .logo-mark{width:28px;height:28px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center}
+    .logo-stack{display:flex;flex-direction:column}
+    .logo-txt{font-size:13px;font-weight:800;line-height:1}
+    .logo-sub{font-size:9px;opacity:.7;text-transform:uppercase;font-weight:600;margin-top:2px}
+    .hdr-center{display:none;margin-left:20px;padding-left:20px;border-left:1px solid rgba(255,255,255,.2)}
+    .page-indicator{display:flex;flex-direction:column}
+    .indicator-label{font-size:9px;text-transform:uppercase;font-weight:700;opacity:.6;letter-spacing:.05em}
+    .indicator-val{font-size:12px;font-weight:600}
+    .hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+    .hbtn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.15);border-radius:8px;font-size:14px;position:relative;cursor:pointer;transition:background .2s,transform .2s}
+    .hbtn:hover{background:rgba(255,255,255,.25);transform:translateY(-2px)}
+    .nbadge{position:absolute;top:4px;right:4px;width:14px;height:14px;background:var(--red);border-radius:50%;font-size:8px;font-weight:800;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--sa-primary);color:#fff}
+    .u-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;cursor:pointer;transition:background .2s}
+    .u-chip:hover{background:rgba(255,255,255,.25)}
+    .u-av{width:26px;height:26px;background:var(--sa-primary-d);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff}
+    .u-info{display:none}
+    .u-name{font-size:11px;font-weight:600;line-height:1}
+    .u-role{font-size:9px;opacity:.7;margin-top:2px}
+
+    /* ── SIDEBAR ── */
+    .sb-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(2px);z-index:998;opacity:0;visibility:hidden;transition:.3s}
+    .sb{position:fixed;top:0;left:0;bottom:0;width:var(--sb-w);background:var(--white);z-index:999;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:10px 0 30px rgba(0,0,0,.1)}
+    .sb-header{height:var(--hh);background:var(--sa-primary-d);display:flex;align-items:center;padding:0 16px;color:#fff;flex-shrink:0}
+    .sb-body{flex:1;overflow-y:auto;padding:10px 0}
+    .sb-footer{padding:12px 16px;border-top:1px solid var(--cb)}
+    body.sb-active .sb{transform:translateX(0)}
+    body.sb-active .sb-overlay{opacity:1;visibility:visible}
+
+    @media(min-width:1024px){
+      body:not(.sb-collapsed) .sb{transform:translateX(0)}
+      .sb{top:var(--hh);z-index:900;box-shadow:none;border-right:1px solid var(--cb)}
+      .sb-header{display:none}
+      body.sb-collapsed .sb{width:68px;transform:translateX(0)}
+      body.sb-collapsed .sb-lbl,body.sb-collapsed .nbc,body.sb-collapsed .sub-menu{display:none}
+      body.sb-collapsed .nb-btn{justify-content:center;padding:12px 0}
+      body.sb-collapsed .nbl{display:none}
+      .hdr-center{display:block}
+      .u-info{display:block}
+    }
+
+    .sb-lbl{font-size:10px;font-weight:700;color:var(--tl);text-transform:uppercase;padding:12px 20px 6px;letter-spacing:.5px}
+    .nb-btn{width:100%;display:flex;align-items:center;gap:12px;padding:10px 18px;border:none;background:none;color:var(--tb);font-size:14px;font-weight:500;font-family:var(--font);cursor:pointer;transition:background .2s,color .2s;border-left:3px solid transparent;text-decoration:none;text-align:left}
+    .nb-btn:hover{background:var(--sa-primary-lt);color:var(--sa-primary)}
+    .nb-btn.active{background:var(--sa-primary-lt);color:var(--sa-primary);border-left-color:var(--sa-primary);font-weight:600}
+    .nbi{width:18px;text-align:center;flex-shrink:0}
+    .nbl{flex:1;text-align:left}
+    .nbc{font-size:10px;transition:transform .2s}
+    .nbc.open{transform:rotate(90deg)}
+    .sub-menu{background:#fafafa}
+    .sub-btn{width:100%;display:flex;align-items:center;gap:10px;padding:8px 18px 8px 48px;border:none;background:none;font-size:13px;font-family:var(--font);color:var(--tb);cursor:pointer;text-align:left;text-decoration:none;transition:background .2s,color .2s;border-left:2px solid transparent}
+    .sub-btn:hover{background:var(--sa-primary-lt);color:var(--sa-primary)}
+    .sub-btn.active{background:var(--sa-primary-lt);color:var(--sa-primary);border-left-color:var(--sa-primary);font-weight:600}
+
+    /* ── MAIN ── */
+    .main{margin-top:var(--hh)!important;margin-left:0;min-height:calc(100vh - var(--hh));background:var(--bg);flex:none!important;overflow-y:visible!important;overflow-x:hidden;transition:margin-left .3s cubic-bezier(.4,0,.2,1)}
+    @media(min-width:1024px){
+      body:not(.sb-collapsed) .main{margin-left:var(--sb-w)}
+      body.sb-collapsed .main{margin-left:68px}
+    }
+    @media(max-width:1023px){.main{margin-left:0!important}}
+    .pg{padding:16px;max-width:1440px;margin:0 auto}
+
+    .pg-head{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--cb)}
+    @media(min-width:768px){.pg-head{flex-direction:row;align-items:center;justify-content:space-between}}
+    .pg-left{display:flex;align-items:center;gap:12px}
+    .pg-ico{width:40px;height:40px;background:var(--sa-primary-lt);color:var(--sa-primary);display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:18px}
+    .pg-title{font-size:1.25rem;font-weight:800;color:var(--td)}
+    .pg-sub{font-size:12px;color:var(--tb)}
+    .pg-acts{display:flex;gap:8px;flex-wrap:wrap}
+    .bc{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11px;margin-bottom:12px}
+    .bc a{color:var(--tl);text-decoration:none}
+    .bc-sep{color:var(--cb)}
+    .bc-cur{color:var(--sa-primary);font-weight:600}
+
+    /* ── STAT GRID ── */
+    .sg{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:20px}
+    @media(min-width:640px){.sg{grid-template-columns:1fr 1fr}}
+    @media(min-width:1200px){.sg{grid-template-columns:repeat(4,1fr)}}
+    .sc{background:var(--white);border:1px solid var(--cb);border-radius:12px;padding:20px;transition:transform .2s,box-shadow .2s}
+    .sc:hover{transform:translateY(-2px);box-shadow:var(--shm)}
+    .sc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .sc-ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+    .sc-val{font-size:1.75rem;font-weight:800;color:var(--td)}
+    .sc-lbl{font-size:12px;color:var(--tb);margin-top:4px}
+    .sc-delta{font-size:11px;color:var(--tl);margin-top:6px}
+    .sc-delta.positive{color:var(--success)}
+    .sc-delta.negative{color:var(--danger)}
+
+    /* ── BUTTONS ── */
+    .btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;border:none;transition:.2s;display:inline-flex;align-items:center;gap:8px}
+    .bt{background:var(--sa-primary);color:#fff}
+    .bt:hover{background:var(--sa-primary-d)}
+    .bs{background:var(--white);color:var(--tb);border:1px solid var(--cb)}
+    .bs:hover{background:#f8fafc}
+    .bd{background:#fde8ed;color:var(--red)}
+    .bd:hover{background:#fbd0da}
+
+    /* ── TAGS ── */
+    .tag{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700}
+    .bg-t{background:var(--sa-primary-lt);color:var(--sa-primary)}
+    .bg-r{background:#fde8ed;color:var(--red)}
+    .bg-b{background:#eff6ff;color:var(--blue)}
+    .bg-y{background:#fef9e7;color:var(--amber)}
+    .bg-g{background:rgba(0,184,148,.12);color:var(--success)}
+
+    /* ── ICON HELPERS ── */
+    .ic-t{background:var(--sa-primary-lt);color:var(--sa-primary)}
+    .ic-b{background:#eff6ff;color:var(--blue)}
+    .ic-r{background:#fde8ed;color:var(--red)}
+    .ic-a{background:#fef9e7;color:var(--amber)}
+    .ic-g{background:rgba(0,184,148,.1);color:var(--success)}
+
+    /* ── TABLE WRAPPER ── */
+    .tw{background:#fff;border:1px solid var(--cb);border-radius:12px;overflow-x:auto}
+    table{width:100%;min-width:700px;border-collapse:collapse}
+    th{background:#f8fafc;padding:12px 16px;text-align:left;font-size:10px;font-weight:800;color:var(--tl);text-transform:uppercase;border-bottom:1px solid var(--cb);letter-spacing:.025em}
+    td{padding:14px 16px;font-size:13px;color:var(--tb);border-bottom:1px solid #f1f5f9;vertical-align:middle}
+    tr:hover td{background:#f8fafc}
+
+    @keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .fu{animation:fu .3s ease-out forwards}
+
+    /* ══════════════════════════════════════
+       PAGE-SPECIFIC STYLES
+    ══════════════════════════════════════ */
+
+    /* ── TOOLBAR (search + bulk) ── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .search-wrap {
+      flex: 1;
+      min-width: 220px;
+      position: relative;
+    }
+    .search-wrap i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--tl);
+      font-size: 13px;
+      pointer-events: none;
+    }
+    .search-wrap input {
+      width: 100%;
+      height: 38px;
+      padding: 0 12px 0 36px;
+      border: 1px solid var(--cb);
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--td);
+      background: #fff;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .search-wrap input:focus {
+      border-color: var(--sa-primary);
+      box-shadow: 0 0 0 3px rgba(0,158,126,.12);
+    }
+    .search-wrap input::placeholder { color: var(--tl) }
+
+    /* ── BULK ACTION BAR (shown when rows selected) ── */
+    .bulk-bar {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: var(--sa-primary-lt);
+      border: 1px solid rgba(0,158,126,.25);
+      border-radius: 10px;
+      padding: 10px 16px;
+      margin-bottom: 12px;
+      animation: fu .2s ease-out;
+    }
+    .bulk-bar.visible { display: flex }
+    .bulk-count {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--sa-primary);
+      flex: 1;
+    }
+    .bulk-actions { display: flex; gap: 8px; flex-wrap: wrap }
+
+    /* ── STUDENT AVATAR ── */
+    .s-av {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+      text-transform: uppercase;
+    }
+    .s-info { display: flex; align-items: center; gap: 10px }
+    .s-name { font-size: 13px; font-weight: 700; color: var(--td) }
+    .s-roll { font-size: 11px; color: var(--tl); margin-top: 1px; font-weight: 500 }
+
+    /* ── BATCH TAG ── */
+    .batch-box { display: flex; flex-direction: column; gap: 2px }
+    .batch-name { font-size: 12px; font-weight: 700; color: var(--td) }
+    .course-name {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--sa-primary);
+      background: var(--sa-primary-lt);
+      padding: 1px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    /* ── PHONE ── */
+    .phone-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--tb);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color .2s;
+    }
+    .phone-link:hover { color: var(--sa-primary) }
+    .phone-link i { font-size: 12px; color: var(--tl) }
+
+    /* ── FEE STATUS PILL ── */
+    .fee-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .fee-pill.paid {
+      background: rgba(0,184,148,.12);
+      color: var(--success);
+    }
+    .fee-pill.overdue {
+      background: #fde8ed;
+      color: var(--red);
+    }
+    .fee-pill.partial {
+      background: #fef9e7;
+      color: var(--amber);
+    }
+    .fee-pill i { font-size: 9px }
+
+    /* ── ROW ACTION BUTTONS ── */
+    .row-acts { display: flex; align-items: center; gap: 6px }
+    .act-btn {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background .2s, transform .15s;
+      text-decoration: none;
+    }
+    .act-btn:hover { transform: translateY(-1px) }
+    .act-view  { background: #eff6ff; color: var(--blue) }
+    .act-edit  { background: var(--sa-primary-lt); color: var(--sa-primary) }
+    .act-email { background: var(--soft-purple); color: var(--purple) }
+    .act-view:hover  { background: #dbeafe }
+    .act-edit:hover  { background: #c0ece0 }
+    .act-email:hover { background: #e8d5f7 }
+
+    /* ── SELECT CHECKBOX ── */
+    .cb-wrap input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--sa-primary);
+      cursor: pointer;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .empty-state i { font-size: 40px; color: var(--cb); margin-bottom: 12px; display: block }
+    .empty-state p { font-size: 14px; color: var(--tl) }
+
+    /* ── PAGINATION ── */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-top: 1px solid var(--cb);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .pag-info { font-size: 12px; color: var(--tl) }
+    .pag-btns { display: flex; gap: 4px }
+    .pag-btn {
+      min-width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--cb);
+      border-radius: 7px;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--tb);
+      cursor: pointer;
+      transition: .2s;
+      font-family: var(--font);
+      padding: 0 8px;
+    }
+    .pag-btn:hover { background: var(--sa-primary-lt); color: var(--sa-primary); border-color: var(--sa-primary) }
+    .pag-btn.active { background: var(--sa-primary); color: #fff; border-color: var(--sa-primary) }
+    .pag-btn:disabled { opacity: .4; cursor: default; pointer-events: none }
+
+    /* ── TABLE HEADER SORT ── */
+    th.sortable { cursor: pointer; user-select: none }
+    th.sortable:hover { color: var(--td) }
+    th.sort-asc::after  { content: ' ↑'; color: var(--sa-primary) }
+    th.sort-desc::after { content: ' ↓'; color: var(--sa-primary) }
+
+    /* ── TOAST ── */
+    .toast-wrap {
+      position: fixed;
+      top: calc(var(--hh) + 12px);
+      right: 16px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast {
+      background: var(--td);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 240px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.15);
+      animation: slideIn .3s ease-out;
+    }
+    .toast.success { background: var(--success) }
+    .toast.info    { background: var(--blue) }
+    .toast.warn    { background: var(--amber) }
+    @keyframes slideIn { from { opacity:0; transform:translateX(30px) } to { opacity:1; transform:translateX(0) } }
+    @keyframes slideOut { from { opacity:1 } to { opacity:0; transform:translateX(30px) } }
+
+    /* ── MOBILE NAV ── */
+    .mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-top:1px solid var(--cb);z-index:9999;padding:0 8px}
+    @media(max-width:1023px){
+      .mob-nav{display:flex}
+      body .main{padding-bottom:76px!important}
+    }
+    .mob-nav .mn-item{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;font-size:10px;font-weight:600;color:var(--tl);background:none;border:none;cursor:pointer;font-family:var(--font);gap:3px;text-decoration:none;transition:color .2s}
+    .mob-nav .mn-item i{font-size:20px}
+    .mob-nav .mn-item.active{color:var(--sa-primary)}
+
+    /* ── AVATAR COLOURS (based on name initial) ── */
+    .av-teal   { background: var(--sa-primary) }
+    .av-blue   { background: var(--blue) }
+    .av-purple { background: var(--purple) }
+    .av-amber  { background: var(--amber) }
+    .av-red    { background: var(--red) }
+    .av-navy   { background: var(--navy) }
+  </style>
+</head>
+<body>
+
+<!-- ══ TOAST CONTAINER ══ -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ══ SIDEBAR OVERLAY ══ -->
+<div class="sb-overlay" id="sbOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sb" id="sb">
+  <div class="sb-header">
+    <div class="hdr-logo-box">
+      <div class="logo-mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#009E7E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="logo-stack">
+        <span class="logo-txt" style="color:#fff">HamroLabs</span>
+        <span class="logo-sub" style="color:rgba(255,255,255,.7)">Academic ERP</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-body">
+    <div class="sb-lbl">Main</div>
+    <button class="nb-btn"><i class="fa fa-home nbi"></i><span class="nbl">Dashboard</span></button>
+
+    <div class="sb-lbl">Students</div>
+    <button class="nb-btn active"><i class="fa fa-users nbi"></i><span class="nbl">All Students</span></button>
+    <button class="nb-btn"><i class="fa fa-user-plus nbi"></i><span class="nbl">Add Student</span></button>
+    <button class="nb-btn"><i class="fa fa-exchange-alt nbi"></i><span class="nbl">Batch Transfer</span></button>
+    <button class="nb-btn"><i class="fa fa-graduation-cap nbi"></i><span class="nbl">Alumni Records</span></button>
+    <button class="nb-btn"><i class="fa fa-folder nbi"></i><span class="nbl">Document Vault</span></button>
+
+    <div class="sb-lbl">Academic</div>
+    <button class="nb-btn"><i class="fa fa-book nbi"></i><span class="nbl">Courses & Batches</span></button>
+    <button class="nb-btn"><i class="fa fa-calendar nbi"></i><span class="nbl">Timetable</span></button>
+    <button class="nb-btn"><i class="fa fa-clipboard-check nbi"></i><span class="nbl">Attendance</span></button>
+
+    <div class="sb-lbl">Finance</div>
+    <button class="nb-btn"><i class="fa fa-rupee-sign nbi"></i><span class="nbl">Fee Management</span></button>
+    <button class="nb-btn"><i class="fa fa-chart-bar nbi"></i><span class="nbl">Reports</span></button>
+
+    <div class="sb-lbl">System</div>
+    <button class="nb-btn"><i class="fa fa-cog nbi"></i><span class="nbl">Settings</span></button>
+  </div>
+
+  <div class="sb-footer">
+    <div style="font-size:11px;color:var(--tl);text-align:center">HamroLabs ERP v3.0 · Phase 1</div>
+  </div>
+</aside>
+
+<!-- ══ HEADER ══ -->
+<header class="hdr">
+  <div class="hdr-left">
+    <button class="sb-toggle" onclick="toggleSidebar()"><i class="fa fa-bars"></i></button>
+    <div class="hdr-logo-box">
+      <div class="logo-mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#009E7E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="logo-stack">
+        <span class="logo-txt">HamroLabs</span>
+        <span class="logo-sub">Academic ERP</span>
+      </div>
+    </div>
+    <div class="hdr-center">
+      <div class="page-indicator">
+        <span class="indicator-label">Section</span>
+        <span class="indicator-val">Students</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hdr-right">
+    <div class="hbtn nb">
+      <i class="fa fa-bell"></i>
+      <span class="nbadge">3</span>
+    </div>
+    <div class="hbtn">
+      <i class="fa fa-question-circle"></i>
+    </div>
+    <div class="u-chip">
+      <div class="u-av">AD</div>
+      <div class="u-info">
+        <div class="u-name">Admin</div>
+        <div class="u-role">Institute Admin</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ MAIN ══ -->
+<main class="main">
+<div class="pg fu">
+
+  <!-- BREADCRUMB -->
+  <div class="bc">
+    <a href="#"><i class="fa fa-home"></i></a>
+    <span class="bc-sep">/</span>
+    <a href="#">Students</a>
+    <span class="bc-sep">/</span>
+    <span class="bc-cur">All Students</span>
+  </div>
+
+  <!-- PAGE HEADER -->
+  <div class="pg-head">
+    <div class="pg-left">
+      <div class="pg-ico"><i class="fa fa-users"></i></div>
+      <div>
+        <div class="pg-title">All Students</div>
+        <div class="pg-sub">Manage and view all enrolled students</div>
+      </div>
+    </div>
+    <div class="pg-acts">
+      <button class="btn bs" onclick="exportCSV()"><i class="fa fa-download"></i> Export CSV</button>
+      <button class="btn bt" onclick="showToast('Opening Add Student form…','info')"><i class="fa fa-user-plus"></i> Add Student</button>
+    </div>
+  </div>
+
+  <!-- STAT GRID -->
+  <div class="sg">
+    <div class="sc">
+      <div class="sc-top">
+        <div class="sc-ico ic-t"><i class="fa fa-users"></i></div>
+        <span class="tag bg-g">Active</span>
+      </div>
+      <div class="sc-val" id="stat-total">248</div>
+      <div class="sc-lbl">Total Students</div>
+      <div class="sc-delta positive"><i class="fa fa-arrow-up"></i> +12 this month</div>
+    </div>
+    <div class="sc">
+      <div class="sc-top">
+        <div class="sc-ico ic-r"><i class="fa fa-exclamation-circle"></i></div>
+        <span class="tag bg-r">Dues</span>
+      </div>
+      <div class="sc-val" id="stat-overdue">34</div>
+      <div class="sc-lbl">Fee Overdue</div>
+      <div class="sc-delta negative"><i class="fa fa-arrow-up"></i> +5 from last week</div>
+    </div>
+    <div class="sc">
+      <div class="sc-top">
+        <div class="sc-ico ic-b"><i class="fa fa-layer-group"></i></div>
+        <span class="tag bg-b">Batches</span>
+      </div>
+      <div class="sc-val">6</div>
+      <div class="sc-lbl">Active Batches</div>
+      <div class="sc-delta positive"><i class="fa fa-circle"></i> All running</div>
+    </div>
+    <div class="sc">
+      <div class="sc-top">
+        <div class="sc-ico ic-a"><i class="fa fa-user-graduate"></i></div>
+        <span class="tag bg-y">Alumni</span>
+      </div>
+      <div class="sc-val">89</div>
+      <div class="sc-lbl">Alumni Records</div>
+      <div class="sc-delta"><i class="fa fa-info-circle"></i> Passed out</div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <i class="fa fa-search"></i>
+      <input type="text" id="searchInput" placeholder="Search by name or roll number…" oninput="filterStudents()"/>
+    </div>
+    <button class="btn bs" id="selectAllBtn" onclick="toggleSelectAll()">
+      <i class="fa fa-check-square"></i> Select All
+    </button>
+    <div style="font-size:12px;color:var(--tl);white-space:nowrap" id="rowCount">Showing 10 of 10</div>
+  </div>
+
+  <!-- BULK ACTION BAR -->
+  <div class="bulk-bar" id="bulkBar">
+    <div class="bulk-count"><i class="fa fa-check-circle"></i> <span id="selectedCount">0</span> students selected</div>
+    <div class="bulk-actions">
+      <button class="btn bs" onclick="bulkEmail()"><i class="fa fa-envelope"></i> Email All</button>
+      <button class="btn bs" onclick="bulkExport()"><i class="fa fa-download"></i> Export Selected</button>
+      <button class="btn bd" onclick="bulkDrop()"><i class="fa fa-times"></i> Mark Dropped</button>
+      <button class="btn bs" style="color:var(--tl)" onclick="clearSelection()"><i class="fa fa-times"></i> Clear</button>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="tw">
+    <table id="studentsTable">
+      <thead>
+        <tr>
+          <th style="width:44px">
+            <div class="cb-wrap"><input type="checkbox" id="masterCheck" onchange="masterCheckChange()"/></div>
+          </th>
+          <th class="sortable" onclick="sortTable('name')">Student</th>
+          <th class="sortable" onclick="sortTable('batch')">Batch &amp; Course</th>
+          <th>Phone</th>
+          <th class="sortable" onclick="sortTable('fee')">Fee Status</th>
+          <th style="text-align:right">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="studentsBody"></tbody>
+    </table>
+
+    <!-- EMPTY STATE -->
+    <div class="empty-state" id="emptyState" style="display:none">
+      <i class="fa fa-search"></i>
+      <p>No students match your search.</p>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination" id="paginationBar">
+      <div class="pag-info" id="pagInfo"></div>
+      <div class="pag-btns" id="pagBtns"></div>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<!-- ══ MOBILE BOTTOM NAV ══ -->
+<nav class="mob-nav">
+  <a class="mn-item" href="#"><i class="fa fa-home"></i><span>Home</span></a>
+  <a class="mn-item active" href="#"><i class="fa fa-users"></i><span>Students</span></a>
+  <a class="mn-item" href="#"><i class="fa fa-rupee-sign"></i><span>Fees</span></a>
+  <a class="mn-item" href="#"><i class="fa fa-chart-bar"></i><span>Reports</span></a>
+  <a class="mn-item" href="#"><i class="fa fa-cog"></i><span>Settings</span></a>
+</nav>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+// ── DATA  (aligned with SRS students schema) ──────────────────────────────
+const STUDENTS = [
+  { id:1,  roll:'HL-2081-001', name:'Ramesh Kumar Shrestha',  gender:'M', batch:'Morning Batch A', course:'Loksewa (Kha-3)', phone:'9841-123456', fee:'paid',    due:0       },
+  { id:2,  roll:'HL-2081-002', name:'Sunita Rai Limbu',       gender:'F', batch:'Day Batch B',     course:'Loksewa (Kha-3)', phone:'9851-234567', fee:'paid',    due:0       },
+  { id:3,  roll:'HL-2081-003', name:'Dipesh Thapa Magar',     gender:'M', batch:'Evening Batch C', course:'Banking/Finance',  phone:'9862-345678', fee:'overdue', due:4500    },
+  { id:4,  roll:'HL-2081-004', name:'Anita Gurung Tamang',    gender:'F', batch:'Morning Batch A', course:'TSC Primary',      phone:'9803-456789', fee:'partial', due:2000    },
+  { id:5,  roll:'HL-2081-005', name:'Bijay Singh Thakuri',    gender:'M', batch:'Day Batch B',     course:'Loksewa (Kha-3)', phone:'9867-567890', fee:'paid',    due:0       },
+  { id:6,  roll:'HL-2081-006', name:'Priya Sharma Neupane',   gender:'F', batch:'Evening Batch C', course:'Health (ANM)',     phone:'9841-678901', fee:'overdue', due:6000    },
+  { id:7,  roll:'HL-2081-007', name:'Kamal Bahadur Rana',     gender:'M', batch:'Morning Batch A', course:'Banking/Finance',  phone:'9851-789012', fee:'paid',    due:0       },
+  { id:8,  roll:'HL-2081-008', name:'Sita Devi Adhikari',     gender:'F', batch:'Day Batch B',     course:'TSC Primary',      phone:'9862-890123', fee:'partial', due:1500    },
+  { id:9,  roll:'HL-2081-009', name:'Hari Prasad Gautam',     gender:'M', batch:'Evening Batch C', course:'Loksewa (Kha-3)', phone:'9803-901234', fee:'paid',    due:0       },
+  { id:10, roll:'HL-2081-010', name:'Mina Kumari Basnet',     gender:'F', batch:'Morning Batch A', course:'Health (ANM)',     phone:'9867-012345', fee:'overdue', due:3500    },
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let filtered  = [...STUDENTS];
+let selected  = new Set();
+let sortField = null;
+let sortDir   = 1;   // 1 = asc, -1 = desc
+let page      = 1;
+const PER_PAGE = 8;
+
+// ── AVATAR COLOUR ──────────────────────────────────────────────────────────
+const AV_COLORS = ['av-teal','av-blue','av-purple','av-amber','av-red','av-navy'];
+function avColor(id){ return AV_COLORS[id % AV_COLORS.length] }
+function initials(name){ return name.split(' ').slice(0,2).map(w=>w[0]).join('') }
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+function render(){
+  const start = (page-1)*PER_PAGE;
+  const slice = filtered.slice(start, start+PER_PAGE);
+  const tbody = document.getElementById('studentsBody');
+
+  document.getElementById('emptyState').style.display = filtered.length ? 'none' : 'block';
+  document.getElementById('paginationBar').style.display = filtered.length ? 'flex' : 'none';
+  document.getElementById('rowCount').textContent =
+    `Showing ${filtered.length ? start+1 : 0}–${Math.min(start+PER_PAGE, filtered.length)} of ${filtered.length}`;
+
+  tbody.innerHTML = slice.map(s => {
+    const chk = selected.has(s.id);
+    const feePill = s.fee === 'paid'
+      ? `<span class="fee-pill paid"><i class="fa fa-check-circle"></i> Paid</span>`
+      : s.fee === 'overdue'
+      ? `<span class="fee-pill overdue"><i class="fa fa-exclamation-circle"></i> Overdue · Rs ${s.due.toLocaleString()}</span>`
+      : `<span class="fee-pill partial"><i class="fa fa-minus-circle"></i> Partial · Rs ${s.due.toLocaleString()}</span>`;
+
+    return `
+    <tr id="row-${s.id}" class="${chk ? 'row-sel' : ''}">
+      <td>
+        <div class="cb-wrap">
+          <input type="checkbox" ${chk ? 'checked' : ''} onchange="toggleRow(${s.id}, this.checked)"/>
+        </div>
+      </td>
+      <td>
+        <div class="s-info">
+          <div class="s-av ${avColor(s.id)}">${initials(s.name)}</div>
+          <div>
+            <div class="s-name">${s.name}</div>
+            <div class="s-roll">${s.roll} &nbsp;·&nbsp; ${s.gender === 'M' ? 'Male' : 'Female'}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="batch-box">
+          <div class="batch-name">${s.batch}</div>
+          <span class="course-name">${s.course}</span>
+        </div>
+      </td>
+      <td>
+        <a href="tel:${s.phone}" class="phone-link">
+          <i class="fa fa-phone"></i> ${s.phone}
+        </a>
+      </td>
+      <td>${feePill}</td>
+      <td>
+        <div class="row-acts" style="justify-content:flex-end">
+          <button class="act-btn act-view" title="View Profile" onclick="viewProfile(${s.id})">
+            <i class="fa fa-eye"></i>
+          </button>
+          <button class="act-btn act-edit" title="Edit Student" onclick="editStudent(${s.id})">
+            <i class="fa fa-pen"></i>
+          </button>
+          <button class="act-btn act-email" title="Send Email" onclick="emailStudent(${s.id})">
+            <i class="fa fa-envelope"></i>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // selected row highlight
+  selected.forEach(id => {
+    const row = document.getElementById('row-'+id);
+    if(row) row.style.background = 'var(--sa-primary-lt)';
+  });
+
+  renderPagination();
+  updateBulkBar();
+  updateMasterCheck();
+}
+
+// ── PAGINATION ────────────────────────────────────────────────────────────
+function renderPagination(){
+  const total = Math.ceil(filtered.length / PER_PAGE);
+  const info  = document.getElementById('pagInfo');
+  const btns  = document.getElementById('pagBtns');
+  const start = (page-1)*PER_PAGE + 1;
+  const end   = Math.min(page*PER_PAGE, filtered.length);
+
+  info.textContent = `${filtered.length ? start : 0} – ${end} of ${filtered.length} students`;
+
+  let html = `<button class="pag-btn" onclick="goPage(${page-1})" ${page<=1?'disabled':''}>
+                <i class="fa fa-chevron-left"></i>
+              </button>`;
+  for(let i=1; i<=total; i++){
+    html += `<button class="pag-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html += `<button class="pag-btn" onclick="goPage(${page+1})" ${page>=total?'disabled':''}>
+             <i class="fa fa-chevron-right"></i>
+           </button>`;
+  btns.innerHTML = html;
+}
+
+function goPage(p){
+  const total = Math.ceil(filtered.length/PER_PAGE);
+  if(p < 1 || p > total) return;
+  page = p;
+  render();
+}
+
+// ── FILTER / SEARCH ───────────────────────────────────────────────────────
+function filterStudents(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  filtered = STUDENTS.filter(s =>
+    s.name.toLowerCase().includes(q) ||
+    s.roll.toLowerCase().includes(q)
+  );
+  page = 1;
+  render();
+}
+
+// ── SORT ──────────────────────────────────────────────────────────────────
+function sortTable(field){
+  if(sortField === field) sortDir *= -1;
+  else { sortField = field; sortDir = 1 }
+
+  // Update header classes
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.classList.remove('sort-asc','sort-desc');
+    if(th.textContent.trim().toLowerCase().startsWith(field)){
+      th.classList.add(sortDir===1?'sort-asc':'sort-desc');
+    }
+  });
+
+  filtered.sort((a,b)=>{
+    const va = field==='name' ? a.name : field==='batch' ? a.batch : a.fee;
+    const vb = field==='name' ? b.name : field==='batch' ? b.batch : b.fee;
+    return va.localeCompare(vb) * sortDir;
+  });
+  render();
+}
+
+// ── SELECT LOGIC ──────────────────────────────────────────────────────────
+function toggleRow(id, checked){
+  checked ? selected.add(id) : selected.delete(id);
+  const row = document.getElementById('row-'+id);
+  if(row) row.style.background = checked ? 'var(--sa-primary-lt)' : '';
+  updateBulkBar();
+  updateMasterCheck();
+}
+
+function masterCheckChange(){
+  const mc = document.getElementById('masterCheck');
+  const slice = filtered.slice((page-1)*PER_PAGE, page*PER_PAGE);
+  if(mc.checked) slice.forEach(s => selected.add(s.id));
+  else           slice.forEach(s => selected.delete(s.id));
+  render();
+}
+
+function toggleSelectAll(){
+  if(selected.size === filtered.length){
+    selected.clear();
+    document.getElementById('selectAllBtn').innerHTML = '<i class="fa fa-check-square"></i> Select All';
+  } else {
+    filtered.forEach(s => selected.add(s.id));
+    document.getElementById('selectAllBtn').innerHTML = '<i class="fa fa-times"></i> Deselect All';
+  }
+  render();
+}
+
+function clearSelection(){
+  selected.clear();
+  render();
+  document.getElementById('selectAllBtn').innerHTML = '<i class="fa fa-check-square"></i> Select All';
+}
+
+function updateMasterCheck(){
+  const mc = document.getElementById('masterCheck');
+  const slice = filtered.slice((page-1)*PER_PAGE, page*PER_PAGE);
+  const selInPage = slice.filter(s=>selected.has(s.id)).length;
+  mc.indeterminate = selInPage > 0 && selInPage < slice.length;
+  mc.checked = slice.length > 0 && selInPage === slice.length;
+}
+
+function updateBulkBar(){
+  const bar = document.getElementById('bulkBar');
+  const cnt = document.getElementById('selectedCount');
+  cnt.textContent = selected.size;
+  bar.classList.toggle('visible', selected.size > 0);
+}
+
+// ── ROW ACTIONS ───────────────────────────────────────────────────────────
+function viewProfile(id){
+  const s = STUDENTS.find(x=>x.id===id);
+  showToast(`Opening profile: ${s.name}`, 'info');
+}
+function editStudent(id){
+  const s = STUDENTS.find(x=>x.id===id);
+  showToast(`Opening edit form: ${s.name}`, 'info');
+}
+function emailStudent(id){
+  const s = STUDENTS.find(x=>x.id===id);
+  showToast(`Composing email to ${s.name}`, 'success');
+}
+
+// ── BULK ACTIONS ──────────────────────────────────────────────────────────
+function bulkEmail(){
+  showToast(`Composing email to ${selected.size} students…`, 'success');
+}
+function bulkExport(){
+  showToast(`Exporting ${selected.size} student records…`, 'info');
+}
+function bulkDrop(){
+  showToast(`Marked ${selected.size} student(s) as Dropped`, 'warn');
+  selected.clear(); render();
+}
+function exportCSV(){
+  const headers = ['Roll No','Name','Batch','Course','Phone','Fee Status','Due Amount'];
+  const rows = filtered.map(s=>[s.roll,s.name,s.batch,s.course,s.phone,s.fee,s.due]);
+  const csv = [headers,...rows].map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'students_export.csv'; a.click();
+  showToast('Export complete — students_export.csv', 'success');
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────────────────
+function toggleSidebar(){
+  document.body.classList.toggle('sb-active');
+  if(window.innerWidth >= 1024)
+    document.body.classList.toggle('sb-collapsed');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function showToast(msg, type='info'){
+  const wrap = document.getElementById('toastWrap');
+  const icons = { success:'check-circle', info:'info-circle', warn:'exclamation-triangle' };
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<i class="fa fa-${icons[type]||'info-circle'}"></i> ${msg}`;
+  wrap.appendChild(t);
+  setTimeout(()=>{ t.style.animation='slideOut .3s ease-out forwards'; setTimeout(()=>t.remove(),300) }, 3200);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "Hamro ERP",
+  "short_name": "Hamro ERP",
+  "description": "Hamro ERP Platform",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#00B894",
+  "icons": [
+    {
+      "src": "assets/images/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

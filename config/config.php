@@ -1,0 +1,294 @@
+<?php
+/**
+ * Hamro ERP — Configuration File
+ * Platform Blueprint V3.0
+ */
+
+// Database Configuration
+if (!defined('DB_HOST')) define('DB_HOST', 'localhost');
+if (!defined('DB_NAME')) define('DB_NAME', 'hamrolabs_db');
+if (!defined('DB_USER')) define('DB_USER', 'root');
+if (!defined('DB_PASS')) define('DB_PASS', '');
+
+// Application Configuration
+if (!defined('APP_NAME')) define('APP_NAME', 'Hamro ERP');
+if (!defined('APP_VERSION')) define('APP_VERSION', '3.0');
+if (!defined('APP_URL')) define('APP_URL', 'http://localhost/erp'); // Adjusted to project root
+if (!defined('APP_ENV')) define('APP_ENV', 'development'); // development, production
+
+// Path Constants
+if (!defined('APP_ROOT')) define('APP_ROOT', realpath(__DIR__ . '/../'));
+if (!defined('VIEWS_PATH')) define('VIEWS_PATH', APP_ROOT . '/resources/views');
+
+
+// Security Configuration
+if (!defined('HASH_ALGO')) define('HASH_ALGO', 'sha256');
+if (!defined('SESSION_LIFETIME')) define('SESSION_LIFETIME', 3600); // 1 hour in seconds
+if (!defined('MAX_LOGIN_ATTEMPTS')) define('MAX_LOGIN_ATTEMPTS', 5);
+if (!defined('LOGIN_LOCKOUT_TIME')) define('LOGIN_LOCKOUT_TIME', 900); // 15 minutes in seconds
+if (!defined('JWT_SECRET')) define('JWT_SECRET', 'hamrolabs-erp-jwt-secret-2025-v3'); // Change in production
+if (!defined('JWT_ALGORITHM')) define('JWT_ALGORITHM', 'HS256');
+if (!defined('PII_ENCRYPTION_KEY')) define('PII_ENCRYPTION_KEY', 'hamrolabs-pii-safe-secret-2025-v3'); // Change in production
+
+// File Upload Configuration
+if (!defined('UPLOAD_PATH')) define('UPLOAD_PATH', 'uploads/');
+if (!defined('MAX_FILE_SIZE')) define('MAX_FILE_SIZE', 5242880); // 5MB in bytes
+if (!defined('ALLOWED_FILE_TYPES')) define('ALLOWED_FILE_TYPES', ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx']);
+
+// Email Configuration
+if (!defined('SMTP_HOST')) define('SMTP_HOST', 'smtp.gmail.com');
+if (!defined('SMTP_PORT')) define('SMTP_PORT', 587);
+if (!defined('SMTP_USERNAME')) define('SMTP_USERNAME', 'your-email@gmail.com');
+if (!defined('SMTP_PASSWORD')) define('SMTP_PASSWORD', 'your-app-password');
+if (!defined('FROM_EMAIL')) define('FROM_EMAIL', 'noreply@hamroerp.com');
+if (!defined('FROM_NAME')) define('FROM_NAME', 'Hamro ERP');
+
+// Pagination Configuration
+if (!defined('RECORDS_PER_PAGE')) define('RECORDS_PER_PAGE', 20);
+if (!defined('MAX_PAGE_LINKS')) define('MAX_PAGE_LINKS', 10);
+
+// Date and Time Configuration
+if (!defined('DATE_FORMAT')) define('DATE_FORMAT', 'Y-m-d');
+if (!defined('DATETIME_FORMAT')) define('DATETIME_FORMAT', 'Y-m-d H:i:s');
+if (!defined('TIMEZONE')) define('TIMEZONE', 'Asia/Kathmandu');
+
+// Role-Based Access Control (RBAC)
+$ROLES = [
+    'superadmin' => [
+        'name' => 'Super Admin',
+        'permissions' => ['*'], // Access to all features
+        'dashboard' => '/dash/super-admin',
+        'color' => '#8141A5'
+    ],
+    'instituteadmin' => [
+        'name' => 'Institute Admin',
+        'permissions' => [
+            'dashboard.view',
+            'students.view', 'students.add', 'students.edit', 'students.delete',
+            'teachers.view', 'teachers.add', 'teachers.edit', 'teachers.delete',
+            'courses.view', 'courses.add', 'courses.edit', 'courses.delete',
+            'classes.view', 'classes.add', 'classes.edit', 'classes.delete',
+            'attendance.view', 'attendance.mark',
+            'exams.view', 'exams.add', 'exams.edit', 'exams.delete',
+            'grades.view', 'grades.add', 'grades.edit', 'grades.delete',
+            'reports.view',
+            'settings.view', 'settings.edit'
+        ],
+        'dashboard' => '/dash/admin',
+        'color' => '#00B894'
+    ],
+    'teacher' => [
+        'name' => 'Teacher',
+        'permissions' => [
+            'dashboard.view',
+            'attendance.view', 'attendance.mark',
+            'exams.view', 'exams.add', 'exams.edit',
+            'grades.view', 'grades.add', 'grades.edit',
+            'students.view',
+            'reports.view'
+        ],
+        'dashboard' => '/dash/teacher',
+        'color' => '#3B82F6'
+    ],
+    'student' => [
+        'name' => 'Student',
+        'permissions' => [
+            'dashboard.view',
+            'attendance.view',
+            'exams.view',
+            'grades.view',
+            'timetable.view',
+            'fees.view',
+            'reports.view'
+        ],
+        'dashboard' => '/dash/student',
+        'color' => '#F59E0B'
+    ],
+    'guardian' => [
+        'name' => 'Guardian',
+        'permissions' => [
+            'dashboard.view',
+            'attendance.view',
+            'exams.view',
+            'grades.view',
+            'timetable.view',
+            'fees.view',
+            'reports.view',
+            'messages.view', 'messages.send'
+        ],
+        'dashboard' => '/dash/guardian',
+        'color' => '#009E7E'
+    ],
+    'frontdesk' => [
+        'name' => 'Front Desk',
+        'permissions' => [
+            'dashboard.view',
+            'students.view', 'students.add', 'students.edit',
+            'teachers.view', 'teachers.add', 'teachers.edit',
+            'attendance.view',
+            'fees.view', 'fees.add', 'fees.edit',
+            'visitors.view', 'visitors.add', 'visitors.edit',
+            'messages.view', 'messages.send',
+            'reports.view'
+        ],
+        'dashboard' => '/dash/front-desk',
+        'color' => '#E11D48'
+    ]
+];
+
+// Database Connection
+if (!function_exists('getDBConnection')) {
+    function getDBConnection() {
+        try {
+            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ];
+            
+            return new PDO($dsn, DB_USER, DB_PASS, $options);
+        } catch (PDOException $e) {
+            error_log("Database connection failed: " . $e->getMessage());
+            if (APP_ENV === 'development') {
+                die("Database connection failed: " . $e->getMessage());
+            } else {
+                die("Database connection failed. Please try again later.");
+            }
+        }
+    }
+}
+
+// Helper Functions
+if (!function_exists('sanitizeInput')) {
+    function sanitizeInput($data) {
+        $data = trim($data);
+        $data = stripslashes($data);
+        $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+        return $data;
+    }
+}
+
+if (!function_exists('generateCSRFToken')) {
+    function generateCSRFToken() {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['csrf_token'];
+    }
+}
+
+if (!function_exists('verifyCSRFToken')) {
+    function verifyCSRFToken($token) {
+        return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+    }
+}
+
+if (!function_exists('redirect')) {
+    function redirect($url) {
+        header("Location: $url");
+        exit();
+    }
+}
+
+if (!function_exists('isLoggedIn')) {
+    function isLoggedIn() {
+        return isset($_SESSION['userData']) && !empty($_SESSION['userData']['id']);
+    }
+}
+
+if (!function_exists('getCurrentUser')) {
+    function getCurrentUser() {
+        return $_SESSION['userData'] ?? null;
+    }
+}
+
+if (!function_exists('hasPermission')) {
+    function hasPermission($permission) {
+        if (!isLoggedIn()) return false;
+        $user = getCurrentUser();
+        global $ROLES;
+        $role = $user['role'] ?? '';
+        if (!isset($ROLES[$role])) return false;
+        $perms = $ROLES[$role]['permissions'];
+        // Wildcard = all permissions
+        if (in_array('*', $perms)) return true;
+        return in_array($permission, $perms);
+    }
+}
+
+if (!function_exists('requireAuth')) {
+    function requireAuth() {
+        if (!isLoggedIn()) {
+            $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
+            redirect(APP_URL . '/auth/login');
+        }
+    }
+}
+
+if (!function_exists('requirePermission')) {
+    function requirePermission($permission) {
+        requireAuth();
+        
+        if (!hasPermission($permission)) {
+            http_response_code(403);
+            die('Access Denied: You do not have permission to view this page.');
+        }
+    }
+}
+
+if (!function_exists('showTenantNotFound')) {
+    /**
+     * Display tenant not found error page
+     * @param string|null $subdomain The subdomain that was not found
+     * @param string|null $tenantName The tenant name that was not found
+     */
+    function showTenantNotFound($subdomain = null, $tenantName = null) {
+        // Extract subdomain from current request if not provided
+        if (empty($subdomain)) {
+            $host = $_SERVER['HTTP_HOST'] ?? '';
+            $host = explode(':', $host)[0];
+            $parts = explode('.', $host);
+            if (count($parts) > 2) {
+                $subdomain = $parts[0];
+            }
+        }
+        
+        // Include the error view
+        $errorFile = VIEWS_PATH . '/errors/tenant-not-found.php';
+        if (file_exists($errorFile)) {
+            include $errorFile;
+        } else {
+            // Fallback if view file doesn't exist
+            http_response_code(404);
+            echo '<!DOCTYPE html><html><head><title>404 - Institute Not Found</title></head>';
+            echo '<body style="font-family: sans-serif; text-align: center; padding: 50px;">';
+            echo '<h1>404 - Institute Not Found</h1>';
+            echo '<p>The institute you are looking for could not be found.</p>';
+            echo '</body></html>';
+        }
+        exit;
+    }
+}
+
+// Initialize session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Set timezone
+date_default_timezone_set(TIMEZONE);
+
+// Error reporting based on environment
+if (APP_ENV === 'development') {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+} else {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 0);
+    ini_set('log_errors', 1);
+    ini_set('error_log', 'logs/error.log');
+}
+
+// Start output buffering
+if (ob_get_level() == 0) ob_start();

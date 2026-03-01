@@ -1,0 +1,274 @@
+.lp-body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    font-family: var(--font);
+}
+
+.lp-container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* LEFT SIDE */
+.lp-left {
+    flex: 1.2;
+    background: #f0f7f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    position: relative;
+}
+
+@media (max-width: 991px) {
+    .lp-left {
+        display: none;
+    }
+}
+
+.lp-illus-wrap {
+    width: 100%;
+    max-width: 650px;
+}
+
+.lp-illus {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.1));
+}
+
+/* RIGHT SIDE */
+.lp-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.lp-form-box {
+    width: 100%;
+    max-width: 420px;
+}
+
+.lp-header {
+    margin-bottom: 40px;
+}
+
+.lp-logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 50px;
+}
+
+.logo-cir {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 3px solid var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--green);
+    box-shadow: 0 8px 20px rgba(0, 184, 148, 0.2);
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.lt-top {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--green);
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.lt-bot {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: 2px;
+    opacity: 0.8;
+}
+
+.lp-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--green-d);
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.lp-subtitle {
+    font-size: 15px;
+    color: var(--text-body);
+    font-weight: 500;
+}
+
+/* FORM */
+.lp-form {
+    margin-top: 30px;
+}
+
+.lp-input {
+    width: 100%;
+    padding: 15px 20px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: var(--font);
+    font-weight: 500;
+    color: var(--text-dark);
+    transition: 0.3s;
+    margin-bottom: 20px;
+}
+
+.lp-input:focus {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px rgba(0, 184, 148, 0.1);
+}
+
+.lp-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+}
+
+.lp-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-body);
+    cursor: pointer;
+}
+
+.lp-forgot {
+    color: var(--green);
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.lp-forgot:hover {
+    color: var(--green-d);
+}
+
+.lp-btn {
+    width: 130px;
+    padding: 14px 30px;
+    background: var(--green-d);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.lp-btn:hover {
+    background: var(--navy);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Error states */
+.form-group.error .form-input {
+    border-color: var(--red);
+}
+
+.form-group.error .form-label {
+    color: var(--red);
+}
+
+.error-message {
+    color: var(--red);
+    font-size: 0.875rem;
+    margin-top: 4px;
+}
+
+/* Success states */
+.form-group.success .form-input {
+    border-color: var(--green);
+}
+
+/* Loading state */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top-color: var(--white);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 10px;
+    }
+
+    .login-form {
+        padding: 24px 16px;
+    }
+
+    .login-title {
+        font-size: 1.5rem;
+    }
+
+    .form-options {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+}
+
+/* Animation */
+.login-card {
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -1,0 +1,163 @@
+<?php
+/**
+ * Student Classes/Timetable API
+ * Handles timetable viewing for students
+ */
+
+if (!defined('APP_NAME')) {
+    require_once __DIR__ . '/../../../../config/config.php';
+}
+
+header('Content-Type: application/json');
+
+// Ensure user is logged in
+if (!isLoggedIn()) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit;
+}
+
+$user = getCurrentUser();
+$tenantId = $user['tenant_id'] ?? null;
+$studentId = $_SESSION['userData']['student_id'] ?? null;
+
+if (!$tenantId || !$studentId) {
+    echo json_encode(['success' => false, 'message' => 'Student record not found']);
+    exit;
+}
+
+$action = $_GET['action'] ?? 'today';
+
+try {
+    $db = getDBConnection();
+    
+    // Get student's batch info
+    $stmt = $db->prepare("
+        SELECT batch_id FROM students WHERE id = :sid AND tenant_id = :tid LIMIT 1
+    ");
+    $stmt->execute(['sid' => $studentId, 'tid' => $tenantId]);
+    $student = $stmt->fetch(PDO::FETCH_ASSOC);
+    $batchId = $student['batch_id'] ?? null;
+    
+    if (!$batchId) {
+        echo json_encode([
+            'success' => true,
+            'data' => [],
+            'message' => 'No batch assigned yet'
+        ]);
+        exit;
+    }
+    
+    switch ($action) {
+        case 'today':
+            // Get today's classes
+            $dayOfWeek = date('l');
+            $stmt = $db->prepare("
+                SELECT t.*, s.name as subject_name, s.code as subject_code,
+                       st.name as teacher_name, st.phone as teacher_contact,
+                       r.name as room_name
+                FROM timetables t
+                LEFT JOIN subjects s ON t.subject_id = s.id
+                LEFT JOIN staff st ON t.teacher_id = st.id
+                LEFT JOIN rooms r ON t.room_id = r.id
+                WHERE t.batch_id = :bid 
+                  AND t.day_of_week = :day
+                  AND t.tenant_id = :tid
+                  AND t.deleted_at IS NULL
+                ORDER BY t.start_time ASC
+            ");
+            $stmt->execute(['bid' => $batchId, 'day' => $dayOfWeek, 'tid' => $tenantId]);
+            $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Add status based on current time
+            $currentTime = date('H:i:s');
+            foreach ($classes as &$class) {
+                if ($currentTime < $class['start_time']) {
+                    $class['status'] = 'upcoming';
+                } elseif ($currentTime >= $class['start_time'] && $currentTime <= $class['end_time']) {
+                    $class['status'] = 'ongoing';
+                } else {
+                    $class['status'] = 'completed';
+                }
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'data' => $classes,
+                'day' => $dayOfWeek,
+                'date' => date('Y-m-d')
+            ]);
+            break;
+            
+        case 'weekly':
+            // Get full week schedule
+            $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            $weeklySchedule = [];
+            
+            foreach ($days as $day) {
+                $stmt = $db->prepare("
+                    SELECT t.*, s.name as subject_name, s.code as subject_code,
+                           st.name as teacher_name, r.name as room_name
+                    FROM timetables t
+                    LEFT JOIN subjects s ON t.subject_id = s.id
+                    LEFT JOIN staff st ON t.teacher_id = st.id
+                    LEFT JOIN rooms r ON t.room_id = r.id
+                    WHERE t.batch_id = :bid 
+                      AND t.day_of_week = :day
+                      AND t.tenant_id = :tid
+                      AND t.deleted_at IS NULL
+                    ORDER BY t.start_time ASC
+                ");
+                $stmt->execute(['bid' => $batchId, 'day' => $day, 'tid' => $tenantId]);
+                $weeklySchedule[$day] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'data' => $weeklySchedule
+            ]);
+            break;
+            
+        case 'calendar':
+            // Get academic calendar events
+            $month = $_GET['month'] ?? date('m');
+            $year = $_GET['year'] ?? date('Y');
+            
+            $stmt = $db->prepare("
+                SELECT * FROM academic_calendar 
+                WHERE tenant_id = :tid
+                  AND MONTH(event_date) = :month
+                  AND YEAR(event_date) = :year
+                  AND (target_type = 'all' OR target_type = 'batch' OR target_batch_id = :bid)
+                  AND deleted_at IS NULL
+                ORDER BY event_date ASC
+            ");
+            $stmt->execute(['tid' => $tenantId, 'month' => $month, 'year' => $year, 'bid' => $batchId]);
+            $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            echo json_encode([
+                'success' => true,
+                'data' => $events,
+                'month' => $month,
+                'year' => $year
+            ]);
+            break;
+            
+        default:
+            echo json_encode(['success' => false, 'message' => 'Invalid action']);
+    }
+    
+} catch (PDOException $e) {
+    error_log("Student Classes Error: " . $e->getMessage());
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Database error occurred',
+        'code' => 'DB_ERROR'
+    ]);
+} catch (Exception $e) {
+    error_log("Student Classes Error: " . $e->getMessage());
+    echo json_encode([
+        'success' => false, 
+        'message' => 'An error occurred',
+        'code' => 'GENERAL_ERROR'
+    ]);
+}

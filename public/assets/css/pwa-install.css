@@ -1,0 +1,228 @@
+/* PWA Install Modal & Sidebar Button */
+:root {
+    --pwa-green: #00B894;
+    --pwa-blur: saturate(180%) blur(20px);
+}
+
+/* Sidebar Button */
+.sb-install-box {
+    padding: 16px;
+    margin-top: auto;
+    border-top: 1px solid var(--card-border);
+}
+
+.install-btn-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px;
+    background: rgb(231, 231, 231);
+    border: 2px solid var(--pwa-green);
+    border-radius: 12px;
+    color: var(--pwa-green);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.install-btn-trigger:hover {
+    background: var(--pwa-green);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 184, 148, 0.2);
+}
+
+.install-btn-trigger i {
+    font-size: 16px;
+}
+
+body.sb-collapsed .sb-install-box {
+    padding: 20px 0;
+    display: flex;
+    justify-content: center;
+}
+
+body.sb-collapsed .install-btn-trigger {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+}
+
+body.sb-collapsed .install-btn-trigger span {
+    display: none;
+}
+
+/* Premium Modal */
+.pwa-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: var(--pwa-blur);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+}
+
+.pwa-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.pwa-modal {
+    background: #fff;
+    width: 90%;
+    max-width: 450px;
+    border-radius: 24px;
+    padding: 32px;
+    text-align: center;
+    position: relative;
+    transform: translateY(40px);
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.pwa-modal-overlay.active .pwa-modal {
+    transform: translateY(0);
+}
+
+.pwa-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: 0.2s;
+}
+
+.pwa-close:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.pwa-icon-showcase {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.pwa-icon-showcase img {
+    width: 60px;
+    height: 60px;
+}
+
+.pwa-badge {
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    background: var(--pwa-green);
+    color: #fff;
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-weight: 800;
+    border: 3px solid #fff;
+}
+
+.pwa-modal h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 12px;
+}
+
+.pwa-modal p {
+    font-size: 15px;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+
+.pwa-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pwa-btn-install {
+    background: var(--pwa-green);
+    color: #fff;
+    border: none;
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.pwa-btn-install:hover {
+    background: #00a887;
+    transform: scale(1.02);
+}
+
+.pwa-btn-later {
+    background: transparent;
+    color: #64748b;
+    border: none;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pwa-steps {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #f1f5f9;
+    text-align: left;
+}
+
+.pwa-step-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #475569;
+}
+
+.pwa-step-ico {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--pwa-green);
+    font-weight: 800;
+}

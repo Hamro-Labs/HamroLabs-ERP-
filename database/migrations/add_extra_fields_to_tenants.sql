@@ -1,0 +1,1 @@
+ALTER TABLE tenants ADD COLUMN email VARCHAR(255) AFTER phone, ADD COLUMN website VARCHAR(255) AFTER email, ADD COLUMN pan_no VARCHAR(100) AFTER province;
