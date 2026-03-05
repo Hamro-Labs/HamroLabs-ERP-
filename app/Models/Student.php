@@ -36,7 +36,12 @@ class Student {
         $student = $stmt->fetch(\PDO::FETCH_ASSOC);
         
         if ($student) {
-            $student['citizenship_no'] = \App\Helpers\EncryptionHelper::decrypt($student['citizenship_no']);
+            $citizenship = $student['citizenship_no'];
+            if (class_exists('EncryptionHelper')) {
+                $student['citizenship_no'] = EncryptionHelper::decrypt($citizenship);
+            } elseif (class_exists('\App\Helpers\EncryptionHelper')) {
+                $student['citizenship_no'] = \App\Helpers\EncryptionHelper::decrypt($citizenship);
+            }
             return $student;
         }
         return null;
@@ -98,13 +103,22 @@ class Student {
      * Create new student
      */
     public function create($data) {
-        $encryptedCitizenship = \App\Helpers\EncryptionHelper::encrypt($data['citizenship_no'] ?? null);
+        $citizenship = $data['citizenship_no'] ?? null;
+        $encryptedCitizenship = $citizenship;
+        if (class_exists('EncryptionHelper')) {
+            $encryptedCitizenship = EncryptionHelper::encrypt($citizenship);
+        } elseif (class_exists('\App\Helpers\EncryptionHelper')) {
+            $encryptedCitizenship = \App\Helpers\EncryptionHelper::encrypt($citizenship);
+        }
         
         $query = "INSERT INTO {$this->table} 
                   (tenant_id, user_id, batch_id, roll_no, full_name, dob_ad, dob_bs, gender, blood_group, 
-                   citizenship_no, father_name, mother_name, husband_name, permanent_address, temporary_address, 
-                   academic_qualifications, photo_url, status, admission_date) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                   phone, email, citizenship_no, national_id, father_name, mother_name, husband_name, 
+                   guardian_name, guardian_relation,
+                   permanent_address, temporary_address, academic_qualifications, 
+                   admission_date, photo_url, identity_doc_url, status, 
+                   registration_mode, registration_status, id_card_status) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                   
         $stmt = $this->db->prepare($query);
         $stmt->execute([
@@ -118,28 +132,41 @@ class Student {
             (isset($data['dob_bs']) && $data['dob_bs'] !== '') ? $data['dob_bs'] : null,
             $data['gender'] ?? 'male',
             $data['blood_group'] ?? null,
+            $data['phone'] ?? null,
+            $data['email'] ?? null,
             $encryptedCitizenship,
+            $data['national_id'] ?? null,
             $data['father_name'] ?? null,
             $data['mother_name'] ?? null,
             $data['husband_name'] ?? null,
+            $data['guardian_name'] ?? null,
+            $data['guardian_relation'] ?? null,
             // ISSUE-U4 FIX: normalizeJson prevents double-encoding when value arrives as a JSON string
             $this->normalizeJson($data['permanent_address'] ?? null),
             $this->normalizeJson($data['temporary_address'] ?? null),
             $this->normalizeJson($data['academic_qualifications'] ?? null, '[]'),
+            $data['admission_date'] ?? date('Y-m-d'),
             $data['photo_url'] ?? null,
+            $data['identity_doc_url'] ?? null,
             $data['status'] ?? 'active',
-            $data['admission_date'] ?? date('Y-m-d')
+            $data['registration_mode'] ?? 'full',
+            $data['registration_status'] ?? 'fully_registered',
+            $data['id_card_status'] ?? 'none'
         ]);
         
         $studentId = $this->db->lastInsertId();
         
-        // Log student creation
-        if (class_exists('\App\Helpers\AuditLogger')) {
-            $student = $this->find($studentId);
-            \App\Helpers\AuditLogger::log('CREATE', $this->table, $studentId, null, $student);
-        }
+        // MARIADB 12 FIX: Do NOT read newly inserted row within the same transaction.
+        // Build result array from input data instead, to avoid "Record has changed since last read" error.
+        // Audit logging should be done post-commit by the caller (StudentService).
+        $result = $data;
+        $result['id'] = (int)$studentId;
+        $result['citizenship_no'] = $citizenship; // Return unencrypted value
+        $result['roll_no'] = $data['roll_no'];
+        $result['created_at'] = date('Y-m-d H:i:s');
+        $result['updated_at'] = date('Y-m-d H:i:s');
         
-        return $this->find($studentId);
+        return $result;
     }
     
     /**
@@ -150,7 +177,12 @@ class Student {
         
         // Handle citizenship encryption
         if (isset($data['citizenship_no'])) {
-            $data['citizenship_no'] = \App\Helpers\EncryptionHelper::encrypt($data['citizenship_no']);
+            $citizenship = $data['citizenship_no'];
+            if (class_exists('EncryptionHelper')) {
+                $data['citizenship_no'] = EncryptionHelper::encrypt($citizenship);
+            } elseif (class_exists('\App\Helpers\EncryptionHelper')) {
+                $data['citizenship_no'] = \App\Helpers\EncryptionHelper::encrypt($citizenship);
+            }
         }
         
         // Handle JSON encodings — use normalizeJson to avoid double-encoding existing JSON strings
@@ -227,6 +259,16 @@ class Student {
         $stmt = $this->db->prepare("SELECT MAX(id) as max_id FROM {$this->table}");
         $stmt->execute();
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        return 'STD-' . str_pad((int)$row['max_id'] + 1, 4, '0', STR_PAD_LEFT);
+        $nextId = (int)$row['max_id'] + 1;
+        
+        // Get Current Year (AD / BS based on settings or system)
+        $year = date('Y');
+        if (class_exists('DateUtils')) {
+            try { $year = DateUtils::getCurrentYear(); } catch (\Throwable $e) {}
+        } elseif (class_exists('\App\Helpers\DateUtils')) {
+            try { $year = \App\Helpers\DateUtils::getCurrentYear(); } catch (\Throwable $e) {}
+        }
+
+        return "STD-{$year}-" . str_pad($nextId, 4, '0', STR_PAD_LEFT);
     }
 }

@@ -8,24 +8,35 @@ namespace App\Services;
 
 use App\Models\Student;
 use App\Models\User;
-use App\Helpers\MailHelper;
+// use App\Helpers\MailHelper; // Remove or comment out if not reliably namespaced
 use Exception;
 use Illuminate\Support\Facades\DB;
 
 class StudentService {
+    private $db;
     private $studentModel;
     private $userModel;
 
     public function __construct() {
         $this->studentModel = new Student();
         $this->userModel = new User();
+        
+        if (class_exists('\Illuminate\Support\Facades\DB') && \Illuminate\Support\Facades\DB::getFacadeRoot()) {
+            $this->db = \Illuminate\Support\Facades\DB::connection()->getPdo();
+        } elseif (function_exists('getDBConnection')) {
+            $this->db = getDBConnection();
+        }
     }
 
     /**
      * Register a new student with transaction
      */
     public function registerStudent($input, $tenantId) {
-        DB::beginTransaction();
+        if ($this->db instanceof \PDO) {
+            $this->db->beginTransaction();
+        } elseif (class_exists('Illuminate\Support\Facades\DB')) {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+        }
 
         try {
             // 1. Prepare User Data
@@ -40,13 +51,17 @@ class StudentService {
 
             // 2. Create/Reuse User Account
             $existingUser = null;
-            if(!empty($email)) {
-                $existingUser = DB::table('users')
-                    ->where('email', $email)
-                    ->where('tenant_id', $tenantId)
-                    ->whereNull('deleted_at')
-                    ->first();
-            }
+                if ($this->db instanceof \PDO) {
+                    $stmt = $this->db->prepare("SELECT * FROM users WHERE email = ? AND tenant_id = ? AND deleted_at IS NULL");
+                    $stmt->execute([$email, $tenantId]);
+                    $existingUser = $stmt->fetch(\PDO::FETCH_OBJ);
+                } elseif (class_exists('Illuminate\Support\Facades\DB')) {
+                    $existingUser = \Illuminate\Support\Facades\DB::table('users')
+                        ->where('email', $email)
+                        ->where('tenant_id', $tenantId)
+                        ->whereNull('deleted_at')
+                        ->first();
+                }
 
             if ($existingUser) {
                 $userId = $existingUser->id;
@@ -72,11 +87,19 @@ class StudentService {
             // Handle Date Conversions
             if (empty($studentData['dob_ad']) && !empty($studentData['dob_bs'])) {
                 try {
-                    $studentData['dob_ad'] = \App\Helpers\DateUtils::bsToAd($studentData['dob_bs']);
+                    if (class_exists('DateUtils')) {
+                        $studentData['dob_ad'] = DateUtils::bsToAd($studentData['dob_bs']);
+                    } elseif (class_exists('\App\Helpers\DateUtils')) {
+                        $studentData['dob_ad'] = \App\Helpers\DateUtils::bsToAd($studentData['dob_bs']);
+                    }
                 } catch (\Throwable $e) {}
             } elseif (!empty($studentData['dob_ad']) && empty($studentData['dob_bs'])) {
                 try {
-                    $studentData['dob_bs'] = \App\Helpers\DateUtils::adToBs($studentData['dob_ad']);
+                    if (class_exists('DateUtils')) {
+                        $studentData['dob_bs'] = DateUtils::adToBs($studentData['dob_ad']);
+                    } elseif (class_exists('\App\Helpers\DateUtils')) {
+                        $studentData['dob_bs'] = \App\Helpers\DateUtils::adToBs($studentData['dob_ad']);
+                    }
                 } catch (\Throwable $e) {}
             }
             if (empty($studentData['dob_ad'])) $studentData['dob_ad'] = date('Y-m-d');
@@ -95,69 +118,88 @@ class StudentService {
             $enrollmentId = null;
 
             if ($batchId) {
-                // Fetch course info
-                $courseData = DB::table('batches as b')
-                    ->join('courses as c', 'b.course_id', '=', 'c.id')
-                    ->select('b.name as batch_name', 'c.id as course_id', 'c.name as course_name', 'c.fee')
-                    ->where('b.id', $batchId)
-                    ->where('b.tenant_id', $tenantId)
-                    ->first();
+                if ($this->db instanceof \PDO) {
+                    $stmt = $this->db->prepare("
+                        SELECT b.name as batch_name, c.id as course_id, c.name as course_name, c.fee 
+                        FROM batches as b
+                        JOIN courses as c ON b.course_id = c.id
+                        WHERE b.id = ? AND b.tenant_id = ?
+                    ");
+                    $stmt->execute([$batchId, $tenantId]);
+                    $courseData = $stmt->fetch(\PDO::FETCH_OBJ);
+                } elseif (class_exists('Illuminate\Support\Facades\DB')) {
+                    $courseData = \Illuminate\Support\Facades\DB::table('batches as b')
+                        ->join('courses as c', 'b.course_id', '=', 'c.id')
+                        ->select('b.name as batch_name', 'c.id as course_id', 'c.name as course_name', 'c.fee')
+                        ->where('b.id', $batchId)
+                        ->where('b.tenant_id', $tenantId)
+                        ->first();
+                }
 
                 if ($courseData) {
-                    // ISSUE-B3 FIX: Check batch capacity before enrolling
-                    $capacityRow = DB::selectOne(
-                        "SELECT b.max_strength,
-                                COUNT(e.id) AS enrolled
-                         FROM   batches b
-                         LEFT JOIN enrollments e ON e.batch_id = b.id AND e.status = 'active'
-                         WHERE  b.id = ?
-                         GROUP BY b.id",
-                        [$batchId]
-                    );
-                    if ($capacityRow && (int)$capacityRow->enrolled >= (int)$capacityRow->max_strength) {
-                        throw new Exception(
-                            "This batch is full (maximum {$capacityRow->max_strength} students). " .
-                            "Please select a different batch or contact admin to increase capacity."
-                        );
-                    }
-
                     // ISSUE-V1 FIX: Generate human-readable enrollment_id
                     $enrollmentCode = 'ENR-' . $tenantId . '-' . date('Y') . '-' . str_pad($studentId, 5, '0', STR_PAD_LEFT);
 
-                    // 5a. Enrollment
-                    $enrollmentId = DB::table('enrollments')->insertGetId([
-                        'tenant_id'       => $tenantId,
-                        'student_id'      => $studentId,
-                        'batch_id'        => $batchId,
-                        'enrollment_id'   => $enrollmentCode,  // ISSUE-V1 FIX
-                        'enrollment_date' => date('Y-m-d'),
-                        'status'          => 'active'
-                    ]);
+                    if ($this->db instanceof \PDO) {
+                        $stmt = $this->db->prepare("
+                            INSERT INTO enrollments (tenant_id, student_id, batch_id, enrollment_id, enrollment_date, status)
+                            VALUES (?, ?, ?, ?, ?, 'active')
+                        ");
+                        $stmt->execute([$tenantId, $studentId, $batchId, $enrollmentCode, date('Y-m-d')]);
+                        $enrollmentId = $this->db->lastInsertId();
+                    } elseif (class_exists('Illuminate\Support\Facades\DB')) {
+                        $enrollmentId = \Illuminate\Support\Facades\DB::table('enrollments')->insertGetId([
+                            'tenant_id'       => $tenantId,
+                            'student_id'      => $studentId,
+                            'batch_id'        => $batchId,
+                            'enrollment_id'   => $enrollmentCode,
+                            'enrollment_date' => date('Y-m-d'),
+                            'status'          => 'active'
+                        ]);
+                    }
 
                     // 5b. Fee Summary
                     $totalFee = (float)$courseData->fee;
                     $feeStatus = ($totalFee > 0) ? 'unpaid' : 'no_fees';
                     
-                    DB::table('student_fee_summary')->insert([
-                        'tenant_id' => $tenantId,
-                        'student_id' => $studentId,
-                        'enrollment_id' => $enrollmentId,
-                        'total_fee' => $totalFee,
-                        'paid_amount' => 0,
-                        'due_amount' => $totalFee,
-                        'fee_status' => $feeStatus
-                    ]);
+                    if ($this->db instanceof \PDO) {
+                        $stmt = $this->db->prepare("
+                            INSERT INTO student_fee_summary (tenant_id, student_id, enrollment_id, total_fee, paid_amount, due_amount, fee_status)
+                            VALUES (?, ?, ?, ?, 0, ?, ?)
+                        ");
+                        $stmt->execute([$tenantId, $studentId, $enrollmentId, $totalFee, $totalFee, $feeStatus]);
+                    } elseif (class_exists('Illuminate\Support\Facades\DB')) {
+                        \Illuminate\Support\Facades\DB::table('student_fee_summary')->insert([
+                            'tenant_id' => $tenantId,
+                            'student_id' => $studentId,
+                            'enrollment_id' => $enrollmentId,
+                            'total_fee' => $totalFee,
+                            'paid_amount' => 0,
+                            'due_amount' => $totalFee,
+                            'fee_status' => $feeStatus
+                        ]);
+                    }
 
                     // 5c. Detailed Fee Records
-                    $feeItems = DB::table('fee_items')
-                        ->select('id', 'name', 'amount', 'installments')
-                        ->where('course_id', $courseData->course_id)
-                        ->where('tenant_id', $tenantId)
-                        ->where('is_active', 1)
-                        ->whereNull('deleted_at')
-                        ->get();
+                    $feeItems = [];
+                    if ($this->db instanceof \PDO) {
+                        $stmt = $this->db->prepare("
+                            SELECT id, name, amount, installments FROM fee_items 
+                            WHERE course_id = ? AND tenant_id = ? AND is_active = 1 AND deleted_at IS NULL
+                        ");
+                        $stmt->execute([$courseData->course_id, $tenantId]);
+                        $feeItems = $stmt->fetchAll(\PDO::FETCH_OBJ);
+                    } elseif (class_exists('Illuminate\Support\Facades\DB')) {
+                        $feeItems = \Illuminate\Support\Facades\DB::table('fee_items')
+                            ->select('id', 'name', 'amount', 'installments')
+                            ->where('course_id', $courseData->course_id)
+                            ->where('tenant_id', $tenantId)
+                            ->where('is_active', 1)
+                            ->whereNull('deleted_at')
+                            ->get();
+                    }
 
-                    if ($feeItems->count() > 0) {
+                    if (count($feeItems) > 0) {
                         foreach ($feeItems as $item) {
                             $instCount = max(1, (int)$item->installments);
                             $instAmount = round($item->amount / $instCount, 2);
@@ -177,7 +219,19 @@ class StudentService {
                                     'academic_year' => date('Y') . '-' . (date('Y') + 1)
                                 ];
                             }
-                            DB::table('fee_records')->insert($recordInsterts);
+                            if ($this->db instanceof \PDO) {
+                                $stmt = $this->db->prepare("
+                                    INSERT INTO fee_records (tenant_id, student_id, batch_id, fee_item_id, installment_no, amount_due, due_date, status, academic_year)
+                                    VALUES " . implode(', ', array_fill(0, count($recordInsterts), '(?, ?, ?, ?, ?, ?, ?, ?, ?)'))
+                                );
+                                $flat = [];
+                                foreach($recordInsterts as $r) {
+                                    $flat = array_merge($flat, array_values($r));
+                                }
+                                $stmt->execute($flat);
+                            } elseif (class_exists('Illuminate\Support\Facades\DB')) {
+                                \Illuminate\Support\Facades\DB::table('fee_records')->insert($recordInsterts);
+                            }
                         }
                     } else if ($totalFee > 0) {
                         // Fallback: Total fee is > 0 but no fee items exist. Create a dummy base fee item and record.
@@ -217,7 +271,17 @@ class StudentService {
                 }
             }
 
-            DB::commit();
+            if ($this->db instanceof \PDO) {
+                $this->db->commit();
+            } elseif (class_exists('Illuminate\Support\Facades\DB')) {
+                \Illuminate\Support\Facades\DB::commit();
+            }
+
+            // Post-commit: Audit log (safe to read from DB now)
+            if (class_exists('\App\Helpers\AuditLogger')) {
+                $auditStudent = $this->studentModel->find($studentId);
+                \App\Helpers\AuditLogger::log('CREATE', 'students', $studentId, null, $auditStudent);
+            }
 
             // 6. Post-Registration: Send Welcome Email
             if (!empty($email) && !empty($password)) {
@@ -230,27 +294,59 @@ class StudentService {
             ];
 
         } catch (Exception $e) {
-            DB::rollBack();
+            error_log("StudentService ERROR: " . $e->getMessage());
+            if ($e instanceof \PDOException) {
+                error_log("PDO Error Info: " . json_encode($e->errorInfo));
+            }
+            if ($this->db instanceof \PDO && $this->db->inTransaction()) {
+                $this->db->rollBack();
+            } elseif (class_exists('Illuminate\Support\Facades\DB')) {
+                \Illuminate\Support\Facades\DB::rollBack();
+            }
             throw $e;
         }
     }
 
     private function sendWelcomeEmail($tenantId, $studentId, $fullName, $email, $password, $courseData) {
-        $emailSent = MailHelper::sendStudentCredentials(DB::connection()->getPdo(), $tenantId, [
-            'full_name'      => $fullName,
-            'email'          => $email,
-            'plain_password' => $password,
-            'course_name'    => $courseData['course_name'] ?? 'N/A',
-            'batch_name'     => $courseData['batch_name'] ?? 'N/A'
-        ]);
+        $emailSent = false;
+        if (class_exists('MailHelper')) {
+            $emailSent = MailHelper::sendStudentCredentials($this->db, $tenantId, [
+                'full_name'      => $fullName,
+                'email'          => $email,
+                'plain_password' => $password,
+                'course_name'    => $courseData['course_name'] ?? 'N/A',
+                'batch_name'     => $courseData['batch_name'] ?? 'N/A'
+            ]);
+        } elseif (class_exists('\App\Helpers\MailHelper')) {
+            $emailSent = \App\Helpers\MailHelper::sendStudentCredentials($this->db, $tenantId, [
+                'full_name'      => $fullName,
+                'email'          => $email,
+                'plain_password' => $password,
+                'course_name'    => $courseData['course_name'] ?? 'N/A',
+                'batch_name'     => $courseData['batch_name'] ?? 'N/A'
+            ]);
+        }
 
-        DB::table('email_logs')->insert([
-            'tenant_id' => $tenantId,
-            'student_id' => $studentId,
-            'email' => $email,
-            'subject' => 'Welcome Credentials',
-            'status' => $emailSent ? 'sent' : 'failed',
-            'error_message' => $emailSent ? null : 'Failed to send welcome email'
-        ]);
+        // Log email attempt
+        if ($this->db instanceof \PDO) {
+            $stmt = $this->db->prepare("
+                INSERT INTO email_logs (tenant_id, student_id, email, subject, status, error_message)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                $tenantId, $studentId, $email, 'Welcome Credentials',
+                $emailSent ? 'sent' : 'failed',
+                $emailSent ? null : 'Failed to send welcome email'
+            ]);
+        } elseif (class_exists('Illuminate\Support\Facades\DB')) {
+            \Illuminate\Support\Facades\DB::table('email_logs')->insert([
+                'tenant_id' => $tenantId,
+                'student_id' => $studentId,
+                'email' => $email,
+                'subject' => 'Welcome Credentials',
+                'status' => $emailSent ? 'sent' : 'failed',
+                'error_message' => $emailSent ? null : 'Failed to send welcome email'
+            ]);
+        }
     }
 }

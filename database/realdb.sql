@@ -239,7 +239,6 @@ CREATE TABLE `attendance_settings` (
 
 /*Data for the table `attendance_settings` */
 
-
 /*Table structure for table `audit_logs` */
 
 DROP TABLE IF EXISTS `audit_logs`;
@@ -259,7 +258,7 @@ CREATE TABLE `audit_logs` (
   KEY `idx_audit_tenant_user` (`tenant_id`,`user_id`),
   KEY `idx_audit_table_record` (`table_name`,`record_id`),
   CONSTRAINT `fk_audit_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=108 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=114 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `audit_logs` */
 
@@ -369,7 +368,12 @@ insert  into `audit_logs`(`id`,`tenant_id`,`user_id`,`ip_address`,`action`,`tabl
 (104,5,38,'::1','PAYMENT_RECORDED','fee_records',21,'{\"old\":\"{\\\"id\\\":21,\\\"tenant_id\\\":5,\\\"student_id\\\":54,\\\"batch_id\\\":4,\\\"fee_item_id\\\":2,\\\"installment_no\\\":1,\\\"amount_due\\\":\\\"7000.00\\\",\\\"amount_paid\\\":\\\"4290.00\\\",\\\"discount_amount\\\":\\\"0.00\\\",\\\"due_date\\\":\\\"2026-03-01\\\",\\\"paid_date\\\":\\\"2026-03-01\\\",\\\"receipt_no\\\":\\\"RCP-000038\\\",\\\"receipt_path\\\":null,\\\"payment_mode\\\":\\\"cash\\\",\\\"cashier_user_id\\\":38,\\\"fine_applied\\\":\\\"0.00\\\",\\\"fine_waived\\\":\\\"0.00\\\",\\\"notes\\\":null,\\\"academic_year\\\":\\\"2026-2027\\\",\\\"status\\\":\\\"partial\\\",\\\"invoice_id\\\":null,\\\"created_at\\\":\\\"2026-03-01 11:01:18\\\",\\\"updated_at\\\":\\\"2026-03-01 18:54:05\\\"}\",\"new\":\"{\\\"id\\\":21,\\\"tenant_id\\\":5,\\\"student_id\\\":54,\\\"batch_id\\\":4,\\\"fee_item_id\\\":2,\\\"installment_no\\\":1,\\\"amount_due\\\":\\\"7000.00\\\",\\\"amount_paid\\\":\\\"4390.00\\\",\\\"discount_amount\\\":\\\"0.00\\\",\\\"due_date\\\":\\\"2026-03-01\\\",\\\"paid_date\\\":\\\"2026-03-01\\\",\\\"receipt_no\\\":\\\"RCP-000039\\\",\\\"receipt_path\\\":null,\\\"payment_mode\\\":\\\"cash\\\",\\\"cashier_user_id\\\":38,\\\"fine_applied\\\":\\\"0.00\\\",\\\"fine_waived\\\":\\\"0.00\\\",\\\"notes\\\":null,\\\"academic_year\\\":\\\"2026-2027\\\",\\\"status\\\":\\\"partial\\\",\\\"invoice_id\\\":null,\\\"created_at\\\":\\\"2026-03-01 11:01:18\\\",\\\"updated_at\\\":\\\"2026-03-02 04:58:40\\\"}\"}','Audited PAYMENT_RECORDED on fee_records','2026-03-02 04:58:40'),
 (105,5,38,'::1','TRANSACTION_CREATED','payment_transactions',39,'{\"old\":null,\"new\":\"{\\\"id\\\":39,\\\"tenant_id\\\":5,\\\"student_id\\\":54,\\\"fee_record_id\\\":21,\\\"invoice_id\\\":null,\\\"amount\\\":\\\"100.00\\\",\\\"payment_method\\\":\\\"cash\\\",\\\"transaction_id\\\":null,\\\"receipt_number\\\":\\\"RCP-000039\\\",\\\"payment_date\\\":\\\"2026-03-01\\\",\\\"receipt_path\\\":null,\\\"recorded_by\\\":38,\\\"notes\\\":\\\" (Bulk Payment Part)\\\",\\\"status\\\":\\\"completed\\\",\\\"created_at\\\":null,\\\"updated_at\\\":null}\"}','Audited TRANSACTION_CREATED on payment_transactions','2026-03-02 04:58:40'),
 (106,NULL,1,'system','PAYMENT_RECORDED','fee_records',26,'{\"old\":\"{\\\"id\\\":26,\\\"tenant_id\\\":5,\\\"student_id\\\":62,\\\"batch_id\\\":4,\\\"fee_item_id\\\":11,\\\"installment_no\\\":1,\\\"amount_due\\\":\\\"5000.00\\\",\\\"amount_paid\\\":\\\"0.00\\\",\\\"discount_amount\\\":\\\"0.00\\\",\\\"due_date\\\":\\\"2026-03-02\\\",\\\"paid_date\\\":null,\\\"receipt_no\\\":null,\\\"receipt_path\\\":null,\\\"payment_mode\\\":null,\\\"cashier_user_id\\\":null,\\\"fine_applied\\\":\\\"0.00\\\",\\\"fine_waived\\\":\\\"0.00\\\",\\\"notes\\\":null,\\\"academic_year\\\":\\\"2026\\\",\\\"status\\\":\\\"pending\\\",\\\"invoice_id\\\":null,\\\"created_at\\\":\\\"2026-03-02 19:03:51\\\",\\\"updated_at\\\":\\\"2026-03-02 19:03:51\\\"}\",\"new\":\"{\\\"id\\\":26,\\\"tenant_id\\\":5,\\\"student_id\\\":62,\\\"batch_id\\\":4,\\\"fee_item_id\\\":11,\\\"installment_no\\\":1,\\\"amount_due\\\":\\\"5000.00\\\",\\\"amount_paid\\\":\\\"5000.00\\\",\\\"discount_amount\\\":\\\"0.00\\\",\\\"due_date\\\":\\\"2026-03-02\\\",\\\"paid_date\\\":\\\"2026-03-02\\\",\\\"receipt_no\\\":\\\"RCP-000043\\\",\\\"receipt_path\\\":null,\\\"payment_mode\\\":\\\"cash\\\",\\\"cashier_user_id\\\":1,\\\"fine_applied\\\":\\\"0.00\\\",\\\"fine_waived\\\":\\\"0.00\\\",\\\"notes\\\":null,\\\"academic_year\\\":\\\"2026\\\",\\\"status\\\":\\\"paid\\\",\\\"invoice_id\\\":null,\\\"created_at\\\":\\\"2026-03-02 19:03:51\\\",\\\"updated_at\\\":\\\"2026-03-02 19:03:51\\\"}\"}','Audited PAYMENT_RECORDED on fee_records','2026-03-02 19:03:51'),
-(107,NULL,1,'system','TRANSACTION_CREATED','payment_transactions',40,'{\"old\":null,\"new\":\"{\\\"id\\\":40,\\\"tenant_id\\\":5,\\\"student_id\\\":62,\\\"fee_record_id\\\":26,\\\"invoice_id\\\":null,\\\"amount\\\":\\\"5000.00\\\",\\\"payment_method\\\":\\\"cash\\\",\\\"transaction_id\\\":null,\\\"receipt_number\\\":\\\"RCP-000043\\\",\\\"payment_date\\\":\\\"2026-03-02\\\",\\\"receipt_path\\\":null,\\\"recorded_by\\\":1,\\\"notes\\\":\\\"Test Payment (Bulk Payment Part)\\\",\\\"status\\\":\\\"completed\\\",\\\"created_at\\\":\\\"2026-03-02 19:03:51\\\",\\\"updated_at\\\":\\\"2026-03-02 19:03:51\\\"}\"}','Audited TRANSACTION_CREATED on payment_transactions','2026-03-02 19:03:51');
+(107,NULL,1,'system','TRANSACTION_CREATED','payment_transactions',40,'{\"old\":null,\"new\":\"{\\\"id\\\":40,\\\"tenant_id\\\":5,\\\"student_id\\\":62,\\\"fee_record_id\\\":26,\\\"invoice_id\\\":null,\\\"amount\\\":\\\"5000.00\\\",\\\"payment_method\\\":\\\"cash\\\",\\\"transaction_id\\\":null,\\\"receipt_number\\\":\\\"RCP-000043\\\",\\\"payment_date\\\":\\\"2026-03-02\\\",\\\"receipt_path\\\":null,\\\"recorded_by\\\":1,\\\"notes\\\":\\\"Test Payment (Bulk Payment Part)\\\",\\\"status\\\":\\\"completed\\\",\\\"created_at\\\":\\\"2026-03-02 19:03:51\\\",\\\"updated_at\\\":\\\"2026-03-02 19:03:51\\\"}\"}','Audited TRANSACTION_CREATED on payment_transactions','2026-03-02 19:03:51'),
+(108,5,38,'::1','PAYMENT_RECORDED','fee_records',21,'{\"old\":\"{\\\"id\\\":21,\\\"tenant_id\\\":5,\\\"student_id\\\":54,\\\"batch_id\\\":4,\\\"fee_item_id\\\":2,\\\"installment_no\\\":1,\\\"amount_due\\\":\\\"7000.00\\\",\\\"amount_paid\\\":\\\"4390.00\\\",\\\"discount_amount\\\":\\\"0.00\\\",\\\"due_date\\\":\\\"2026-03-01\\\",\\\"paid_date\\\":\\\"2026-03-01\\\",\\\"receipt_no\\\":\\\"RCP-000039\\\",\\\"receipt_path\\\":null,\\\"payment_mode\\\":\\\"cash\\\",\\\"cashier_user_id\\\":38,\\\"fine_applied\\\":\\\"0.00\\\",\\\"fine_waived\\\":\\\"0.00\\\",\\\"notes\\\":null,\\\"academic_year\\\":\\\"2026-2027\\\",\\\"status\\\":\\\"partial\\\",\\\"invoice_id\\\":null,\\\"created_at\\\":\\\"2026-03-01 11:01:18\\\",\\\"updated_at\\\":\\\"2026-03-02 04:58:40\\\"}\",\"new\":\"{\\\"id\\\":21,\\\"tenant_id\\\":5,\\\"student_id\\\":54,\\\"batch_id\\\":4,\\\"fee_item_id\\\":2,\\\"installment_no\\\":1,\\\"amount_due\\\":\\\"7000.00\\\",\\\"amount_paid\\\":\\\"5000.00\\\",\\\"discount_amount\\\":\\\"0.00\\\",\\\"due_date\\\":\\\"2026-03-01\\\",\\\"paid_date\\\":\\\"2026-03-04\\\",\\\"receipt_no\\\":\\\"RCP-000044\\\",\\\"receipt_path\\\":null,\\\"payment_mode\\\":\\\"cash\\\",\\\"cashier_user_id\\\":38,\\\"fine_applied\\\":\\\"0.00\\\",\\\"fine_waived\\\":\\\"0.00\\\",\\\"notes\\\":null,\\\"academic_year\\\":\\\"2026-2027\\\",\\\"status\\\":\\\"partial\\\",\\\"invoice_id\\\":null,\\\"created_at\\\":\\\"2026-03-01 11:01:18\\\",\\\"updated_at\\\":\\\"2026-03-04 08:45:37\\\"}\"}','Audited PAYMENT_RECORDED on fee_records','2026-03-04 08:45:37'),
+(109,5,38,'::1','TRANSACTION_CREATED','payment_transactions',41,'{\"old\":null,\"new\":\"{\\\"id\\\":41,\\\"tenant_id\\\":5,\\\"student_id\\\":54,\\\"fee_record_id\\\":21,\\\"invoice_id\\\":null,\\\"amount\\\":\\\"610.00\\\",\\\"payment_method\\\":\\\"cash\\\",\\\"transaction_id\\\":null,\\\"receipt_number\\\":\\\"RCP-000044\\\",\\\"payment_date\\\":\\\"2026-03-04\\\",\\\"receipt_path\\\":null,\\\"recorded_by\\\":38,\\\"notes\\\":\\\" (Bulk Payment Part)\\\",\\\"status\\\":\\\"completed\\\",\\\"created_at\\\":\\\"2026-03-04 08:45:37\\\",\\\"updated_at\\\":\\\"2026-03-04 08:45:37\\\"}\"}','Audited TRANSACTION_CREATED on payment_transactions','2026-03-04 08:45:37'),
+(110,5,38,'::1','PAYMENT_RECORDED','fee_records',21,'{\"old\":\"{\\\"id\\\":21,\\\"tenant_id\\\":5,\\\"student_id\\\":54,\\\"batch_id\\\":4,\\\"fee_item_id\\\":2,\\\"installment_no\\\":1,\\\"amount_due\\\":\\\"7000.00\\\",\\\"amount_paid\\\":\\\"5000.00\\\",\\\"discount_amount\\\":\\\"0.00\\\",\\\"due_date\\\":\\\"2026-03-01\\\",\\\"paid_date\\\":\\\"2026-03-04\\\",\\\"receipt_no\\\":\\\"RCP-000044\\\",\\\"receipt_path\\\":null,\\\"payment_mode\\\":\\\"cash\\\",\\\"cashier_user_id\\\":38,\\\"fine_applied\\\":\\\"0.00\\\",\\\"fine_waived\\\":\\\"0.00\\\",\\\"notes\\\":null,\\\"academic_year\\\":\\\"2026-2027\\\",\\\"status\\\":\\\"partial\\\",\\\"invoice_id\\\":null,\\\"created_at\\\":\\\"2026-03-01 11:01:18\\\",\\\"updated_at\\\":\\\"2026-03-04 08:45:37\\\"}\",\"new\":\"{\\\"id\\\":21,\\\"tenant_id\\\":5,\\\"student_id\\\":54,\\\"batch_id\\\":4,\\\"fee_item_id\\\":2,\\\"installment_no\\\":1,\\\"amount_due\\\":\\\"7000.00\\\",\\\"amount_paid\\\":\\\"5610.00\\\",\\\"discount_amount\\\":\\\"0.00\\\",\\\"due_date\\\":\\\"2026-03-01\\\",\\\"paid_date\\\":\\\"2026-03-04\\\",\\\"receipt_no\\\":\\\"RCP-000045\\\",\\\"receipt_path\\\":null,\\\"payment_mode\\\":\\\"cash\\\",\\\"cashier_user_id\\\":38,\\\"fine_applied\\\":\\\"0.00\\\",\\\"fine_waived\\\":\\\"0.00\\\",\\\"notes\\\":null,\\\"academic_year\\\":\\\"2026-2027\\\",\\\"status\\\":\\\"partial\\\",\\\"invoice_id\\\":null,\\\"created_at\\\":\\\"2026-03-01 11:01:18\\\",\\\"updated_at\\\":\\\"2026-03-04 08:46:27\\\"}\"}','Audited PAYMENT_RECORDED on fee_records','2026-03-04 08:46:27'),
+(111,5,38,'::1','TRANSACTION_CREATED','payment_transactions',42,'{\"old\":null,\"new\":\"{\\\"id\\\":42,\\\"tenant_id\\\":5,\\\"student_id\\\":54,\\\"fee_record_id\\\":21,\\\"invoice_id\\\":null,\\\"amount\\\":\\\"610.00\\\",\\\"payment_method\\\":\\\"cash\\\",\\\"transaction_id\\\":null,\\\"receipt_number\\\":\\\"RCP-000045\\\",\\\"payment_date\\\":\\\"2026-03-04\\\",\\\"receipt_path\\\":null,\\\"recorded_by\\\":38,\\\"notes\\\":\\\" (Bulk Payment Part)\\\",\\\"status\\\":\\\"completed\\\",\\\"created_at\\\":\\\"2026-03-04 08:46:27\\\",\\\"updated_at\\\":\\\"2026-03-04 08:46:27\\\"}\"}','Audited TRANSACTION_CREATED on payment_transactions','2026-03-04 08:46:27'),
+(113,5,38,'::1','CREATE','students',65,'{\"old\":null,\"new\":\"{\\\"id\\\":65,\\\"tenant_id\\\":5,\\\"user_id\\\":91,\\\"batch_id\\\":34,\\\"roll_no\\\":\\\"STD-0063\\\",\\\"full_name\\\":\\\"Nepal Cyber Firm\\\",\\\"dob_ad\\\":\\\"2010-11-17\\\",\\\"dob_bs\\\":\\\"2063-09-05\\\",\\\"gender\\\":\\\"male\\\",\\\"blood_group\\\":\\\"\\\",\\\"phone\\\":null,\\\"email\\\":null,\\\"citizenship_no\\\":\\\"nepalcyberfirm@gmail.com\\\",\\\"national_id\\\":null,\\\"father_name\\\":\\\"Nepal Cyber Firm\\\",\\\"mother_name\\\":null,\\\"husband_name\\\":null,\\\"guardian_name\\\":null,\\\"guardian_relation\\\":null,\\\"permanent_address\\\":\\\"{\\\\\\\"address\\\\\\\":\\\\\\\"Hamro Labs ,No. 13, Radhemai, Birgunj Metropolitan City Parsa District, Madhesh Province, Nepal Postal Code: 44300\\\\\\\"}\\\",\\\"temporary_address\\\":\\\"{}\\\",\\\"academic_qualifications\\\":\\\"[]\\\",\\\"admission_date\\\":\\\"2026-03-04\\\",\\\"photo_url\\\":null,\\\"identity_doc_url\\\":null,\\\"status\\\":\\\"active\\\",\\\"registration_mode\\\":\\\"full\\\",\\\"registration_status\\\":\\\"fully_registered\\\",\\\"id_card_status\\\":\\\"none\\\",\\\"id_card_issued_at\\\":null,\\\"created_at\\\":\\\"2026-03-04 09:20:48\\\",\\\"updated_at\\\":\\\"2026-03-04 09:20:48\\\",\\\"deleted_at\\\":null}\"}','Audited CREATE on students','2026-03-04 09:20:48');
 
 /*Table structure for table `batch_subject_allocations` */
 
@@ -393,7 +397,7 @@ CREATE TABLE `batch_subject_allocations` (
 /*Data for the table `batch_subject_allocations` */
 
 insert  into `batch_subject_allocations`(`id`,`tenant_id`,`batch_id`,`teacher_id`,`subject_id`,`created_at`,`updated_at`) values 
-(1,5,4,8,1,'2026-02-27 08:18:17','2026-02-27 08:18:17');
+(1,5,4,9,1,'2026-02-27 08:18:17','2026-03-03 19:35:35');
 
 /*Table structure for table `batches` */
 
@@ -419,12 +423,13 @@ CREATE TABLE `batches` (
   KEY `idx_batches_status` (`status`),
   CONSTRAINT `fk_batches_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_batches_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `batches` */
 
 insert  into `batches`(`id`,`tenant_id`,`course_id`,`name`,`shift`,`start_date`,`end_date`,`max_strength`,`room`,`status`,`created_at`,`updated_at`,`deleted_at`) values 
-(4,5,4,'Kharidar First Papper 2082','morning','2026-02-03','2026-02-27',40,'101','active','2026-02-24 07:29:25','2026-02-24 07:29:25',NULL);
+(4,5,4,'Kharidar First Papper 2082','morning','2026-02-03','2026-02-27',40,'101','active','2026-02-24 07:29:25','2026-02-24 07:29:25',NULL),
+(34,5,38,'Evening Batch Nasu','morning','2004-06-25','2010-07-03',40,'','active','2026-03-03 21:44:48','2026-03-03 21:44:48',NULL);
 
 /*Table structure for table `courses` */
 
@@ -449,14 +454,15 @@ CREATE TABLE `courses` (
   PRIMARY KEY (`id`),
   KEY `fk_courses_tenant` (`tenant_id`),
   CONSTRAINT `fk_courses_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `courses` */
 
 insert  into `courses`(`id`,`tenant_id`,`name`,`code`,`description`,`fee`,`duration_weeks`,`seats`,`is_active`,`category`,`status`,`duration_months`,`created_at`,`updated_at`,`deleted_at`) values 
 (4,5,'Kharidar First Papper ','KH-01','abc',7000.00,12,100,1,'loksewa','active',NULL,'2026-02-24 07:25:28','2026-02-27 10:27:03',NULL),
 (5,5,'Kharidar Second Papper ','KH-02','abc',12500.00,12,100,1,'loksewa','active',NULL,'2026-02-26 14:44:57','2026-02-27 06:55:30','2026-02-27 06:55:30'),
-(6,5,'Kharidar Third papper','KH-03','Kharidar all pappers',7000.00,14,99,1,'loksewa','active',NULL,'2026-02-26 15:01:15','2026-02-27 06:55:35','2026-02-27 06:55:35');
+(6,5,'Kharidar Third papper','KH-03','Kharidar all pappers',7000.00,14,99,1,'loksewa','active',NULL,'2026-02-26 15:01:15','2026-02-27 06:55:35','2026-02-27 06:55:35'),
+(38,5,'Nayab Shhuba ','NY101',' ej\n',8000.00,12,99,1,'loksewa','active',NULL,'2026-03-03 21:43:49','2026-03-03 21:43:49',NULL);
 
 /*Table structure for table `dashboard_checklists` */
 
@@ -520,7 +526,7 @@ CREATE TABLE `email_logs` (
   KEY `fk_email_logs_student` (`student_id`),
   CONSTRAINT `fk_email_logs_student` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_email_logs_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `email_logs` */
 
@@ -547,7 +553,8 @@ insert  into `email_logs`(`id`,`tenant_id`,`student_id`,`email`,`subject`,`statu
 (20,5,NULL,'addamssmith937@gmail.com','Welcome Credentials','sent',NULL,'2026-03-01 07:25:25'),
 (21,5,53,'addamssmith937@gmail.com','Welcome Credentials','sent',NULL,'2026-03-01 09:25:24'),
 (22,5,54,'dhirendraparshad65@gmail.com','Welcome Credentials','sent',NULL,'2026-03-01 11:01:24'),
-(23,5,55,'amirisah1@gmail.com','Welcome Credentials','sent',NULL,'2026-03-01 11:40:30');
+(23,5,55,'amirisah1@gmail.com','Welcome Credentials','sent',NULL,'2026-03-01 11:40:30'),
+(24,5,65,'nepalcyberfirm@gmail.com','Welcome Credentials','sent',NULL,'2026-03-04 09:20:53');
 
 /*Table structure for table `email_settings` */
 
@@ -615,6 +622,7 @@ CREATE TABLE `enrollments` (
   `status` enum('active','completed','dropped','transferred') NOT NULL DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `status_changed_at` timestamp NULL DEFAULT NULL COMMENT 'Timestamp when enrollment status last changed (completed/dropped/transferred)',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_unique_enrollment` (`tenant_id`,`student_id`,`batch_id`),
   KEY `fk_enr_tenant` (`tenant_id`),
@@ -623,14 +631,15 @@ CREATE TABLE `enrollments` (
   CONSTRAINT `fk_enr_batch_ref` FOREIGN KEY (`batch_id`) REFERENCES `batches` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_enr_student_ref` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_enr_tenant_ref` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `enrollments` */
 
-insert  into `enrollments`(`id`,`tenant_id`,`student_id`,`batch_id`,`enrollment_id`,`enrollment_date`,`status`,`created_at`,`updated_at`) values 
-(30,5,53,4,NULL,'2026-03-01','active','2026-03-01 09:25:19','2026-03-01 09:25:19'),
-(31,5,54,4,NULL,'2026-03-01','active','2026-03-01 11:01:18','2026-03-01 11:01:18'),
-(32,5,55,4,NULL,'2026-03-01','active','2026-03-01 11:40:25','2026-03-01 11:40:25');
+insert  into `enrollments`(`id`,`tenant_id`,`student_id`,`batch_id`,`enrollment_id`,`enrollment_date`,`status`,`created_at`,`updated_at`,`status_changed_at`) values 
+(30,5,53,4,NULL,'2026-03-01','active','2026-03-01 09:25:19','2026-03-01 09:25:19',NULL),
+(31,5,54,4,NULL,'2026-03-01','active','2026-03-01 11:01:18','2026-03-01 11:01:18',NULL),
+(32,5,55,4,NULL,'2026-03-01','active','2026-03-01 11:40:25','2026-03-01 11:40:25',NULL),
+(33,5,65,34,'ENR-5-2026-00065','2026-03-04','active','2026-03-04 09:20:48','2026-03-04 09:20:48',NULL);
 
 /*Table structure for table `exam_attempts` */
 
@@ -767,14 +776,15 @@ CREATE TABLE `fee_items` (
   KEY `fk_fee_items_course` (`course_id`),
   CONSTRAINT `fk_fee_items_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_fee_items_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `fee_items` */
 
 insert  into `fee_items`(`id`,`tenant_id`,`course_id`,`name`,`type`,`amount`,`installments`,`late_fine_per_day`,`is_active`,`created_at`,`updated_at`,`deleted_at`) values 
-(1,5,6,'Tuition Fee - Kharidar Third papper','admission',7000.00,1,0.00,1,'2026-02-26 15:01:15','2026-02-27 06:55:35','2026-02-27 06:55:35'),
-(2,5,4,'Tuition Fee - Kharidar First Papper ','admission',7000.00,1,0.00,1,'2026-02-27 06:44:18','2026-02-27 10:27:03',NULL),
-(11,5,4,'Term Fee','other',5000.00,1,0.00,1,'2026-03-02 19:03:51','2026-03-02 19:03:51',NULL);
+(1,5,6,'Tuition Fee - Kharidar Third papper','monthly',7000.00,1,0.00,1,'2026-02-26 15:01:15','2026-03-04 08:49:04','2026-02-27 06:55:35'),
+(2,5,4,'Tuition Fee - Kharidar First Papper ','monthly',7000.00,1,0.00,1,'2026-02-27 06:44:18','2026-03-04 08:49:04',NULL),
+(11,5,4,'Term Fee','other',5000.00,1,0.00,1,'2026-03-02 19:03:51','2026-03-02 19:03:51',NULL),
+(12,5,38,'Tuition Fee - Nayab Shhuba ','monthly',8000.00,1,0.00,1,'2026-03-03 21:43:49','2026-03-04 08:49:04',NULL);
 
 /*Table structure for table `fee_records` */
 
@@ -821,15 +831,16 @@ CREATE TABLE `fee_records` (
   CONSTRAINT `fk_fee_records_fee_item` FOREIGN KEY (`fee_item_id`) REFERENCES `fee_items` (`id`),
   CONSTRAINT `fk_fee_records_student` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_fee_records_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `fee_records` */
 
 insert  into `fee_records`(`id`,`tenant_id`,`student_id`,`batch_id`,`fee_item_id`,`installment_no`,`amount_due`,`amount_paid`,`discount_amount`,`due_date`,`paid_date`,`receipt_no`,`receipt_path`,`payment_mode`,`cashier_user_id`,`fine_applied`,`fine_waived`,`notes`,`academic_year`,`status`,`invoice_id`,`created_at`,`updated_at`) values 
 (20,5,53,4,2,1,7000.00,3000.00,0.00,'2026-03-01','2026-03-01','RCP-000027',NULL,'cash',38,0.00,0.00,NULL,'2026-2027','partial',NULL,'2026-03-01 09:25:19','2026-03-01 10:09:56'),
-(21,5,54,4,2,1,7000.00,4390.00,0.00,'2026-03-01','2026-03-01','RCP-000039',NULL,'cash',38,0.00,0.00,NULL,'2026-2027','partial',NULL,'2026-03-01 11:01:18','2026-03-02 04:58:40'),
+(21,5,54,4,2,1,7000.00,5610.00,0.00,'2026-03-01','2026-03-04','RCP-000045',NULL,'cash',38,0.00,0.00,NULL,'2026-2027','partial',NULL,'2026-03-01 11:01:18','2026-03-04 08:46:27'),
 (22,5,55,4,2,1,7000.00,7000.00,0.00,'2026-03-01','2026-03-01','RCP-000033',NULL,'cash',38,0.00,0.00,NULL,'2026-2027','paid',NULL,'2026-03-01 11:40:25','2026-03-01 12:15:59'),
-(26,5,62,4,11,1,5000.00,5000.00,0.00,'2026-03-02','2026-03-02','RCP-000043',NULL,'cash',1,0.00,0.00,NULL,'2026','paid',NULL,'2026-03-02 19:03:51','2026-03-02 19:03:51');
+(26,5,62,4,11,1,5000.00,5000.00,0.00,'2026-03-02','2026-03-02','RCP-000043',NULL,'cash',1,0.00,0.00,NULL,'2026-2027','paid',NULL,'2026-03-02 19:03:51','2026-03-04 08:49:04'),
+(27,5,65,34,12,1,8000.00,0.00,0.00,'2026-03-04',NULL,NULL,NULL,NULL,NULL,0.00,0.00,NULL,'2026-2027','pending',NULL,'2026-03-04 09:20:48','2026-03-04 09:20:48');
 
 /*Table structure for table `fee_settings` */
 
@@ -857,7 +868,7 @@ CREATE TABLE `fee_settings` (
 /*Data for the table `fee_settings` */
 
 insert  into `fee_settings`(`id`,`tenant_id`,`invoice_prefix`,`receipt_prefix`,`next_invoice_number`,`next_receipt_number`,`auto_generate_invoice`,`send_invoice_email`,`apply_late_fine`,`late_fine_grace_days`,`currency`,`created_at`,`updated_at`) values 
-(2,5,'INV','RCP',1,44,1,1,1,5,'NPR',NULL,NULL);
+(2,5,'INV','RCP',1,46,1,1,1,5,'NPR',NULL,NULL);
 
 /*Table structure for table `guardians` */
 
@@ -1377,7 +1388,7 @@ CREATE TABLE `payment_transactions` (
   CONSTRAINT `payment_transactions_recorded_by_foreign` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `payment_transactions_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE,
   CONSTRAINT `payment_transactions_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `payment_transactions` */
 
@@ -1397,7 +1408,9 @@ insert  into `payment_transactions`(`id`,`tenant_id`,`student_id`,`fee_record_id
 (37,5,54,21,NULL,1000.00,'esewa',NULL,'RCP-000037','2026-03-01',NULL,38,' (Bulk Payment Part)','completed','2026-03-02 18:09:10','2026-03-02 18:09:10'),
 (38,5,54,21,NULL,300.00,'cash',NULL,'RCP-000038','2026-03-01',NULL,38,' (Bulk Payment Part)','completed','2026-03-02 18:09:10','2026-03-02 18:09:10'),
 (39,5,54,21,NULL,100.00,'cash',NULL,'RCP-000039','2026-03-01',NULL,38,' (Bulk Payment Part)','completed','2026-03-02 18:09:10','2026-03-02 18:09:10'),
-(40,5,62,26,NULL,5000.00,'cash',NULL,'RCP-000043','2026-03-02',NULL,1,'Test Payment (Bulk Payment Part)','completed','2026-03-02 19:03:51','2026-03-02 19:03:51');
+(40,5,62,26,NULL,5000.00,'cash',NULL,'RCP-000043','2026-03-02',NULL,1,'Test Payment (Bulk Payment Part)','completed','2026-03-02 19:03:51','2026-03-02 19:03:51'),
+(41,5,54,21,NULL,610.00,'cash',NULL,'RCP-000044','2026-03-04',NULL,38,' (Bulk Payment Part)','completed','2026-03-04 08:45:37','2026-03-04 08:45:37'),
+(42,5,54,21,NULL,610.00,'cash',NULL,'RCP-000045','2026-03-04',NULL,38,' (Bulk Payment Part)','completed','2026-03-04 08:46:27','2026-03-04 08:46:27');
 
 /*Table structure for table `payments` */
 
@@ -1665,6 +1678,33 @@ CREATE TABLE `staff_attendance` (
 
 /*Data for the table `staff_attendance` */
 
+/*Table structure for table `staff_salaries` */
+
+DROP TABLE IF EXISTS `staff_salaries`;
+
+CREATE TABLE `staff_salaries` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `amount` decimal(15,2) NOT NULL,
+  `month` tinyint(2) NOT NULL,
+  `year` smallint(4) NOT NULL,
+  `payment_date` date NOT NULL,
+  `status` enum('paid','pending') NOT NULL DEFAULT 'paid',
+  `payment_method` enum('cash','bank_transfer','cheque','esewa','khalti') DEFAULT 'cash',
+  `transaction_id` varchar(100) DEFAULT NULL,
+  `remarks` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_ss_tenant` (`tenant_id`),
+  KEY `idx_ss_user` (`user_id`),
+  CONSTRAINT `fk_ss_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_ss_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+/*Data for the table `staff_salaries` */
+
 /*Table structure for table `student_fee_summary` */
 
 DROP TABLE IF EXISTS `student_fee_summary`;
@@ -1687,14 +1727,15 @@ CREATE TABLE `student_fee_summary` (
   CONSTRAINT `fk_fee_summary_enrollment` FOREIGN KEY (`enrollment_id`) REFERENCES `enrollments` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_fee_summary_student` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_fee_summary_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `student_fee_summary` */
 
 insert  into `student_fee_summary`(`id`,`tenant_id`,`student_id`,`enrollment_id`,`total_fee`,`paid_amount`,`due_amount`,`fee_status`,`created_at`,`updated_at`) values 
 (26,5,53,30,7000.00,3000.00,4000.00,'partial','2026-03-01 09:25:19','2026-03-01 10:09:56'),
-(27,5,54,31,7000.00,4390.00,2610.00,'partial','2026-03-01 11:01:18','2026-03-02 04:58:40'),
-(28,5,55,32,7000.00,7000.00,0.00,'paid','2026-03-01 11:40:25','2026-03-01 12:15:59');
+(27,5,54,31,7000.00,5610.00,1390.00,'partial','2026-03-01 11:01:18','2026-03-04 08:46:27'),
+(28,5,55,32,7000.00,7000.00,0.00,'paid','2026-03-01 11:40:25','2026-03-01 12:15:59'),
+(29,5,65,33,8000.00,0.00,8000.00,'unpaid','2026-03-04 09:20:48','2026-03-04 09:20:48');
 
 /*Table structure for table `student_invoices` */
 
@@ -1805,10 +1846,11 @@ CREATE TABLE `students` (
   KEY `idx_students_status` (`status`),
   KEY `idx_students_deleted_at` (`deleted_at`),
   KEY `idx_students_id_card` (`tenant_id`,`id_card_status`),
+  KEY `idx_students_tenant_status` (`tenant_id`,`status`,`deleted_at`),
   CONSTRAINT `fk_students_batch` FOREIGN KEY (`batch_id`) REFERENCES `batches` (`id`),
   CONSTRAINT `fk_students_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_students_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `students` */
 
@@ -1816,7 +1858,9 @@ insert  into `students`(`id`,`tenant_id`,`user_id`,`batch_id`,`roll_no`,`full_na
 (53,5,86,4,'STD-0001','Devbarat Prasad Patel','2006-12-20','2063-09-05','male','B+','9811144402','addamssmith937@gmail.com','HdTz7nalwuzkoEcw5Qn5Hjc3QzkxWEtpbmFyL2Z2QjNpYm55RFE9PQ==','','Nagendra Prasad Patel','Sanju Devi','','','','{\"province\":\"Madhesh Province\",\"district\":\"Parsa\",\"municipality\":\"Bahudramai\",\"ward\":\"07\"}','[]','[]','2026-03-01','http://localhost/erp/public/uploads/students/std_1772336418_69a3b522a0303.jpg',NULL,'active','full','fully_registered','none',NULL,'2026-03-01 09:25:19','2026-03-01 10:09:32',NULL),
 (54,5,87,4,'STD-0054','Devbarat Patel','2026-03-01','2082-11-17','male','','9510408252','dhirendraparshad65@gmail.com','','','','','','','','[]','[]','[]','2026-03-01',NULL,NULL,'active','full','fully_registered','none',NULL,'2026-03-01 11:01:18','2026-03-01 11:04:07',NULL),
 (55,5,88,4,'STD-0055','Amiri Sah ','1996-01-01','2052-09-17','male','AB+','98250350412','amirisah1@gmail.com','','','Nagendra Prasad Patel','Sanju Devi','','','','{\"province\":\"Madhesh Province\",\"district\":\"Parsa\",\"municipality\":\"Bahudramai\",\"ward\":\"\"}','{\"province\":\"Madhesh Province\",\"district\":\"Parsa\",\"municipality\":\"Bahudramai \",\"ward\":\"\"}','[{\"level\":\"+2\",\"school\":\"A Plus academy\",\"year\":\"2079\",\"percentage\":\"B+\"}]','2026-03-01','http://localhost/erp/public/uploads/students/std_1772344524_69a3d4cc64b05.jpg',NULL,'active','full','fully_registered','none',NULL,'2026-03-01 11:40:25','2026-03-01 12:02:26',NULL),
-(62,5,NULL,4,'ROLL-TEST-001','Test Fee Student',NULL,NULL,NULL,NULL,NULL,'testfee@example.com',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active','full','fully_registered','none',NULL,'2026-03-02 19:03:51','2026-03-02 19:03:51',NULL);
+(62,5,NULL,4,'ROLL-TEST-001','Test Fee Student',NULL,NULL,NULL,NULL,NULL,'testfee@example.com',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'active','full','fully_registered','none',NULL,'2026-03-02 19:03:51','2026-03-02 19:03:51',NULL),
+(65,5,91,34,'STD-0063','Nepal Cyber Firm','2010-11-17','2063-09-05','male','',NULL,NULL,'c1hiEwpZgMLF1S6LfTT2WWJVaTJ4MEQ4ZU9HZFhVbVhrZ3Z0bDVSQjJPZHA3cjdkS0xBUk1LK2hhOG89',NULL,'Nepal Cyber Firm',NULL,NULL,NULL,NULL,'{\"address\":\"Hamro Labs ,No. 13, Radhemai, Birgunj Metropolitan City Parsa District, Madhesh Province, Nepal Postal Code: 44300\"}','{}','[]','2026-03-04',NULL,NULL,'active','full','fully_registered','none',NULL,'2026-03-04 09:20:48','2026-03-04 09:20:48',NULL),
+(66,5,92,4,'STU-2026-0006','Niki Yadav','2009-09-19','','female','','9811144402','nepalcodingschool@gmail.com','1025151',NULL,'Master Mind Facts',NULL,NULL,NULL,NULL,'{\"address\":\"Birgunj-14,Parsa\"}','{\"address\":\"Birgunj-13, Radhemai , Parsa\"}','','2026-03-04',NULL,NULL,'active','full','fully_registered','none',NULL,'2026-03-04 09:24:20','2026-03-05 07:13:38','2026-03-05 07:13:38');
 
 /*Table structure for table `study_material_categories` */
 
@@ -1991,6 +2035,7 @@ CREATE TABLE `teachers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `tenant_id` bigint(20) unsigned NOT NULL,
   `user_id` bigint(20) unsigned NOT NULL,
+  `employee_id` varchar(50) DEFAULT NULL,
   `full_name` varchar(255) NOT NULL,
   `phone` varchar(20) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
@@ -2008,9 +2053,12 @@ CREATE TABLE `teachers` (
   KEY `fk_teachers_user` (`user_id`),
   CONSTRAINT `fk_teachers_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_teachers_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `teachers` */
+
+insert  into `teachers`(`id`,`tenant_id`,`user_id`,`employee_id`,`full_name`,`phone`,`email`,`qualification`,`specialization`,`joined_date`,`monthly_salary`,`leave_balance`,`status`,`created_at`,`updated_at`,`deleted_at`) values 
+(9,5,89,NULL,'Shyam Sir ','9811144402','loginteacher@gmail.com',NULL,'GK ,IQ','2026-03-03',0.00,0,'active','2026-03-03 19:28:18','2026-03-03 19:28:18',NULL);
 
 /*Table structure for table `tenant_payments` */
 
@@ -2111,6 +2159,7 @@ CREATE TABLE `users` (
   `password_hash` varchar(255) NOT NULL,
   `phone` varchar(20) DEFAULT NULL,
   `status` enum('active','inactive','suspended') NOT NULL DEFAULT 'active',
+  `monthly_salary` decimal(10,2) DEFAULT 0.00,
   `last_login_at` timestamp NULL DEFAULT NULL,
   `two_fa_enabled` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -2124,18 +2173,21 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   KEY `fk_users_tenant` (`tenant_id`),
   CONSTRAINT `fk_users_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=89 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=93 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `users` */
 
-insert  into `users`(`id`,`tenant_id`,`role`,`email`,`password_hash`,`phone`,`status`,`last_login_at`,`two_fa_enabled`,`created_at`,`updated_at`,`deleted_at`,`locked_until`,`avatar`,`name`,`two_factor_enabled`,`two_factor_secret`) values 
-(1,NULL,'superadmin','pdewbrath@gmail.com','$2y$12$04j0nPzxsEZUNJscHMmGrOuq89J0fPAkfXZifa4xJY4xSYuwN3I0C',NULL,'active','2026-03-01 10:06:13',0,'2026-02-21 14:02:24','2026-03-01 10:06:13',NULL,NULL,NULL,NULL,0,NULL),
-(2,NULL,'superadmin','super2@hamrolabs.com','$2y$12$R.v07Zun1pS.k.v7F.v/Oun8n9Z6E6Z6E6Z6E6Z6E6Z6E6Z6E6Z6',NULL,'active',NULL,0,'2026-02-21 14:02:24','2026-02-23 14:01:23',NULL,NULL,NULL,NULL,0,NULL),
-(38,5,'instituteadmin','nepalcyberfirm@gmail.com','$2y$12$07je2KcDgDw5a51L62PN5.fMg6Zwr/Plg5B6WQbwEGAsNy.S1Geq.','9811144402','active','2026-03-03 12:58:41',0,'2026-02-23 14:53:01','2026-03-03 12:58:41','2026-02-26 14:43:43',NULL,NULL,'Priyanka Kumari Sah',0,NULL),
-(85,5,'frontdesk','mind59024@gmail.com','$2y$12$H2zvqWBSSrhWlwM0fgYbK.FG.STMvleJ/hIvsOlslEU.eclOnwk6W','9811144402','active','2026-03-03 08:54:14',0,'2026-03-01 09:17:00','2026-03-03 08:54:14',NULL,NULL,NULL,'Nepal Cyber Firm',0,NULL),
-(86,5,'student','addamssmith937@gmail.com','$2y$12$orK6zuY./9/e6fncFnnLS.yoNZlb1/RgnRHEQ.Pu1JZEIwS0FI16S','9811144402','active','2026-03-01 09:27:18',0,'2026-03-01 09:25:19','2026-03-01 09:27:18',NULL,NULL,NULL,'Devbarat Prasad Patel',0,NULL),
-(87,5,'student','dhirendraparshad65@gmail.com','$2y$12$NTM7pJnoWv0xl1i3phEAyOLjw06gMv/dZsI6nbSWjVtnamIOR.nbi','9510408252','active','2026-03-01 18:11:54',0,'2026-03-01 11:01:18','2026-03-01 18:11:54',NULL,NULL,NULL,'Devbarat Patel',0,NULL),
-(88,5,'student','amirisah1@gmail.com','$2y$12$rDWdDv4ZQKMLrnEgj/NxuuEpWGx6XOIWoY5nxCz.ItM9NyVX3AD7a','98250350412','active',NULL,0,'2026-03-01 11:40:25','2026-03-01 12:02:26',NULL,NULL,NULL,'Amiri Sah ',0,NULL);
+insert  into `users`(`id`,`tenant_id`,`role`,`email`,`password_hash`,`phone`,`status`,`monthly_salary`,`last_login_at`,`two_fa_enabled`,`created_at`,`updated_at`,`deleted_at`,`locked_until`,`avatar`,`name`,`two_factor_enabled`,`two_factor_secret`) values 
+(1,NULL,'superadmin','pdewbrath@gmail.com','$2y$12$04j0nPzxsEZUNJscHMmGrOuq89J0fPAkfXZifa4xJY4xSYuwN3I0C',NULL,'active',0.00,'2026-03-01 10:06:13',0,'2026-02-21 14:02:24','2026-03-01 10:06:13',NULL,NULL,NULL,NULL,0,NULL),
+(2,NULL,'superadmin','super2@hamrolabs.com','$2y$12$R.v07Zun1pS.k.v7F.v/Oun8n9Z6E6Z6E6Z6E6Z6E6Z6E6Z6E6Z6',NULL,'active',0.00,NULL,0,'2026-02-21 14:02:24','2026-02-23 14:01:23',NULL,NULL,NULL,NULL,0,NULL),
+(38,5,'instituteadmin','nepalcyberfirm@gmail.com','$2y$12$07je2KcDgDw5a51L62PN5.fMg6Zwr/Plg5B6WQbwEGAsNy.S1Geq.','9811144402','active',0.00,'2026-03-05 07:26:54',0,'2026-02-23 14:53:01','2026-03-05 07:26:54','2026-02-26 14:43:43',NULL,NULL,'Priyanka Kumari Sah',0,NULL),
+(85,5,'frontdesk','mind59024@gmail.com','$2y$12$H2zvqWBSSrhWlwM0fgYbK.FG.STMvleJ/hIvsOlslEU.eclOnwk6W','9811144402','active',0.00,'2026-03-04 09:14:52',0,'2026-03-01 09:17:00','2026-03-04 09:14:52',NULL,NULL,NULL,'Nepal Cyber Firm',0,NULL),
+(86,5,'student','addamssmith937@gmail.com','$2y$12$orK6zuY./9/e6fncFnnLS.yoNZlb1/RgnRHEQ.Pu1JZEIwS0FI16S','9811144402','active',0.00,'2026-03-01 09:27:18',0,'2026-03-01 09:25:19','2026-03-01 09:27:18',NULL,NULL,NULL,'Devbarat Prasad Patel',0,NULL),
+(87,5,'student','dhirendraparshad65@gmail.com','$2y$12$NTM7pJnoWv0xl1i3phEAyOLjw06gMv/dZsI6nbSWjVtnamIOR.nbi','9510408252','active',0.00,'2026-03-01 18:11:54',0,'2026-03-01 11:01:18','2026-03-01 18:11:54',NULL,NULL,NULL,'Devbarat Patel',0,NULL),
+(88,5,'student','amirisah1@gmail.com','$2y$12$rDWdDv4ZQKMLrnEgj/NxuuEpWGx6XOIWoY5nxCz.ItM9NyVX3AD7a','98250350412','active',0.00,NULL,0,'2026-03-01 11:40:25','2026-03-01 12:02:26',NULL,NULL,NULL,'Amiri Sah ',0,NULL),
+(89,5,'teacher','loginteacher@gmail.com','$2y$12$8OiEhOjucIVBvv8hn0E.lezmeUHu5ElAHeHMQK9T.zGdxtrfT6dzm','9811144402','active',0.00,NULL,0,'2026-03-03 19:28:18','2026-03-03 19:28:18',NULL,NULL,NULL,'Shyam Sir ',0,NULL),
+(91,5,'student','nepalcyberfirm@gmail.com','$2y$12$9/IF/g1MdlW0zf/U4H/3lOa0QT5RtOxMD0PfI3mhKz2Ng3eNAtQ6i','9845012350','active',0.00,NULL,0,'2026-03-04 09:20:48','2026-03-04 09:20:48',NULL,NULL,NULL,'Nepal Cyber Firm',0,NULL),
+(92,5,'student','nepalcodingschool@gmail.com','$2y$12$k2wfNkXANIj9yQ16MzakletVuBF5Rv.EN4fNTsVQC3t2sirZMkLHW','9811144402','active',0.00,NULL,0,'2026-03-04 09:24:20','2026-03-05 07:13:38','2026-03-05 07:13:38',NULL,NULL,'Niki Yadav',0,NULL);
 
 /*Table structure for table `workflow_checklists` */
 

@@ -65,7 +65,17 @@ class User {
         ]);
         
         $userId = $this->db->lastInsertId();
-        return $this->find($userId);
+        // MARIADB 12 FIX: Do NOT read newly inserted row within the same transaction.
+        // Build result array from input data instead to avoid "Record has changed since last read" error.
+        return [
+            'id' => (int)$userId,
+            'tenant_id' => $data['tenant_id'] ?? null,
+            'role' => $data['role'],
+            'email' => $data['email'],
+            'name' => $data['name'],
+            'phone' => $data['phone'] ?? null,
+            'status' => $data['status'] ?? 'active',
+        ];
     }
     
     /**

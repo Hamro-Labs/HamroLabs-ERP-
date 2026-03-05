@@ -102,7 +102,7 @@ try {
     }
 
     // ────────────────────────────────────────────────────────
-    // POST — Quick Registration
+    // POST — Quick Registration (Admission)
     // ────────────────────────────────────────────────────────
     if ($method === 'POST') {
         $input = json_decode(file_get_contents('php://input'), true);
@@ -119,136 +119,37 @@ try {
             exit;
         }
 
-        $fullName = trim($input['full_name']);
-        $email    = trim($input['email']);
-        $password = $input['password'];
-        $batchId  = (int)$input['batch_id'];
-        $phone    = !empty($input['contact_number']) ? trim($input['contact_number'])
-                  : (!empty($input['phone']) ? trim($input['phone']) : null);
+        try {
+            // Instantiate StudentService to handle unified registration logic
+            // (Creates User, Student, Enrollment, Fee Summary, and Fee Records)
+            $service = new \App\Services\StudentService();
+            
+            // Normalize addresses if they are plain strings (StudentService/Model expects clean JSON or array)
+            if (isset($input['permanent_address']) && !is_array($input['permanent_address']) && !isJson($input['permanent_address'])) {
+                $input['permanent_address'] = ['address' => $input['permanent_address']];
+            }
+            if (isset($input['temporary_address']) && !is_array($input['temporary_address']) && !isJson($input['temporary_address'])) {
+                $input['temporary_address'] = ['address' => $input['temporary_address']];
+            }
 
-        // Optional/Full Fields
-        $dobAd         = $input['dob_ad'];
-        $dobBs         = $input['dob_bs'] ?? null;
-        $gender        = $input['gender'];
-        $bloodGroup    = $input['blood_group'] ?? null;
-        $citizenshipNo = $input['citizenship_no'] ?? $input['citizenship'] ?? null;
-        $fatherName    = trim($input['father_name'] ?? '');
-        
-        // Handle Addresses
-        $permanentAddr = $input['permanent_address'] ?? null;
-        if (!empty($permanentAddr) && !isJson($permanentAddr)) {
-            $permanentAddr = json_encode(['address' => $permanentAddr]);
+            // Ensure contact_number is mapped to phone for the service
+            if (!isset($input['phone']) && isset($input['contact_number'])) {
+                $input['phone'] = $input['contact_number'];
+            }
+
+            $result = $service->registerStudent($input, $tenantId);
+
+            echo json_encode([
+                'success'    => true,
+                'message'    => "Student registered successfully! Enrollment and fee records have been initialized.",
+                'student_id' => $result['student']['id'],
+                'roll_no'    => $result['student']['roll_no'],
+                'enrollment_id' => $result['enrollment_id']
+            ]);
+        } catch (Exception $e) {
+            error_log("FrontDesk Registration Error: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
-        $temporaryAddr = $input['temporary_address'] ?? null;
-        if (!empty($temporaryAddr) && !isJson($temporaryAddr)) {
-            $temporaryAddr = json_encode(['address' => $temporaryAddr]);
-        }
-
-        $academicQual = $input['academic_qualifications'] ?? $input['academic_qualification'] ?? '[]';
-        if (is_array($academicQual)) $academicQual = json_encode($academicQual);
-
-        // Validate batch belongs to this tenant and is active/upcoming
-        $stmt = $db->prepare("SELECT id FROM batches WHERE id = :bid AND tenant_id = :tid AND status IN ('active', 'upcoming') AND deleted_at IS NULL");
-        $stmt->execute(['bid' => $batchId, 'tid' => $tenantId]);
-        if (!$stmt->fetch()) {
-            echo json_encode(['success' => false, 'message' => 'Invalid batch selected.']);
-            exit;
-        }
-
-        $db->beginTransaction();
-
-        // 1. Create user account
-        $stmt = $db->prepare("SELECT id FROM users WHERE email = :email AND tenant_id = :tid AND deleted_at IS NULL");
-        $stmt->execute(['email' => $email, 'tid' => $tenantId]);
-        if ($stmt->fetch()) {
-            $db->rollBack();
-            echo json_encode(['success' => false, 'message' => "A user account with email '{$email}' already exists."]);
-            exit;
-        }
-
-        $stmt = $db->prepare("
-            INSERT INTO users (tenant_id, role, email, password_hash, phone, name, status, created_at, updated_at)
-            VALUES (:tid, 'student', :email, :pass, :phone, :name, 'active', NOW(), NOW())
-        ");
-        $stmt->execute([
-            'tid'   => $tenantId,
-            'email' => $email,
-            'pass'  => password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]),
-            'phone' => $phone,
-            'name'  => $fullName,
-        ]);
-        $userId = $db->lastInsertId();
-
-        // 2. Generate roll number (Standard format)
-        $stmt = $db->prepare("SELECT COUNT(*) FROM students WHERE tenant_id = :tid");
-        $stmt->execute(['tid' => $tenantId]);
-        $count = (int)$stmt->fetchColumn() + 1;
-        $rollNo = 'STU-' . date('Y') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
-
-        // 3. Create student record
-        $stmt = $db->prepare("
-            INSERT INTO students (
-                tenant_id, user_id, batch_id, roll_no, full_name,
-                phone, email,
-                dob_ad, dob_bs, gender, blood_group,
-                citizenship_no, father_name,
-                permanent_address, temporary_address,
-                academic_qualifications,
-                status, registration_mode, registration_status,
-                admission_date,
-                created_at, updated_at
-            ) VALUES (
-                :tid, :uid, :bid, :roll, :name,
-                :phone, :email,
-                :dob_ad, :dob_bs, :gender, :blood,
-                :citiz, :father,
-                :perm, :temp,
-                :qual,
-                'active', 'full', 'fully_registered',
-                CURDATE(),
-                NOW(), NOW()
-            )
-        ");
-        $stmt->execute([
-            'tid'    => $tenantId,
-            'uid'    => $userId,
-            'bid'    => $batchId,
-            'roll'   => $rollNo,
-            'name'   => $fullName,
-            'phone'  => $phone,
-            'email'  => $email,
-            'dob_ad' => $dobAd,
-            'dob_bs' => $dobBs,
-            'gender' => $gender,
-            'blood'  => $bloodGroup,
-            'citiz'  => $citizenshipNo,
-            'father' => $fatherName,
-            'perm'   => $permanentAddr,
-            'temp'   => $temporaryAddr,
-            'qual'   => $academicQual,
-        ]);
-        $studentId = $db->lastInsertId();
-
-        $studentId = $db->lastInsertId();
-        $db->commit();
-
-        // ── Fire-and-forget: send login credentials to student ──
-        MailHelper::sendStudentCredentials($db, $tenantId, [
-            'full_name'      => $fullName,
-            'email'          => $email,
-            'plain_password' => $password, 
-        ]);
-
-        // Security: clear plain password from memory
-        unset($password);
-
-        echo json_encode([
-            'success'    => true,
-            'message'    => "Student '{$fullName}' registered successfully! Login credentials have been emailed.",
-            'student_id' => $studentId,
-            'roll_no'    => $rollNo,
-            'mode'       => 'quick_registered',
-        ]);
         exit;
     }
 

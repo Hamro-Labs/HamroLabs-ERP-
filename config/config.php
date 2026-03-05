@@ -139,6 +139,10 @@ $ROLES = [
 // Database Connection
 if (!function_exists('getDBConnection')) {
     function getDBConnection() {
+        static $pdo = null;
+        if ($pdo !== null) {
+            return $pdo;
+        }
         try {
             $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
             $options = [
@@ -147,7 +151,8 @@ if (!function_exists('getDBConnection')) {
                 PDO::ATTR_EMULATE_PREPARES => false,
             ];
             
-            return new PDO($dsn, DB_USER, DB_PASS, $options);
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+            return $pdo;
         } catch (PDOException $e) {
             error_log("Database connection failed: " . $e->getMessage());
             if (APP_ENV === 'development') {
