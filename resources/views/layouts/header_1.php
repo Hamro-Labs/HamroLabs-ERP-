@@ -97,6 +97,12 @@ function renderSuperAdminCSS() {
     }
 }
 
+function renderSuperAdminJS() {
+    foreach (getSuperAdminJS() as $name => $path) {
+        echo '<script src="' . $path . '?v=' . SUPERADMIN_ASSETS_VERSION . '"></script>' . "\n";
+    }
+}
+
 function renderPWAMeta() {
     global $themeColor;
     echo '    <link rel="manifest" href="'    . APP_URL . '/public/manifest.json">'             . "\n";
@@ -272,6 +278,9 @@ function renderSuperAdminHeader() {
 
     <!-- Super Admin CSS -->
     <?php renderSuperAdminCSS(); ?>
+
+    <!-- Super Admin JS -->
+    <?php renderSuperAdminJS(); ?>
 
 
     <!-- PWA Settings -->

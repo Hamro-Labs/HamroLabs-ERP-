@@ -25,7 +25,8 @@ class ReceiptHelper {
                    fr.amount_due, fr.amount_paid as record_paid, fr.fine_applied,
                    t.name as institute_name, t.address as institute_address,
                    t.phone as institute_contact, t.email as institute_email,
-                   t.logo_path as institute_logo
+                   t.logo_path as institute_logo,
+                   COALESCE(t.pan_number, '') as institute_pan
             FROM payment_transactions pt
             JOIN fee_records fr ON pt.fee_record_id = fr.id
             JOIN fee_items fi ON fr.fee_item_id = fi.id
@@ -73,33 +74,42 @@ class ReceiptHelper {
             ];
         }
 
+        // Resolved authenticated user for "Received By" footer
+        $receivedByName = $_SESSION['userData']['name'] ?? 'Staff';
+        $receivedByRole = $_SESSION['userData']['role'] ?? '';
+
         $receiptData = [
-            'institute_name'    => $txn['institute_name'] ?? 'Institute',
-            'institute_address' => $txn['institute_address'] ?? '',
-            'institute_contact' => $txn['institute_contact'] ?? '',
-            'institute_email'   => $txn['institute_email'] ?? '',
-            'institute_logo_url'=> $logoUrl,
-            'receipt_no'        => $txn['receipt_number'],
-            'date_ad'           => $txn['payment_date'],
-            'date_bs'           => \App\Helpers\DateUtils::adToBs($txn['payment_date'], 'Y-m-d', 'en'), 
-            'student_name'      => $txn['student_name'],
-            'student_email'     => $txn['student_email'] ?? '',
-            'course_name'       => $txn['course_name'] ?? '',
-            'batch_name'        => $txn['batch_name'] ?? '',
-            'course_fee'        => floatval($txn['amount_due']),
-            'paid_amount'       => $totalPaid,
-            'remaining'         => max(0, floatval($txn['amount_due']) - floatval($txn['record_paid'])),
-            'fine_amount'       => $txn['fine_applied'] ?? 0,
-            'address'           => $txn['student_address'] ?? '',
-            'contact_number'    => $txn['phone'] ?? '',
-            'payment_mode'      => $txn['payment_method'],
-            'transaction_id'    => $txn['id'],
-            'remarks'           => $txn['notes'] ?? '',
-            'items'             => $items
+            'institute_name'     => $txn['institute_name'] ?? 'Institute',
+            'institute_address'  => $txn['institute_address'] ?? '',
+            'institute_contact'  => $txn['institute_contact'] ?? '',
+            'institute_email'    => $txn['institute_email'] ?? '',
+            'institute_logo_url' => $logoUrl,
+            'institute_pan'      => $txn['institute_pan'] ?? '',
+            'receipt_no'         => $txn['receipt_number'],
+            'date_ad'            => $txn['payment_date'],
+            'date_bs'            => \App\Helpers\DateUtils::adToBs($txn['payment_date'], 'Y-m-d', 'en'),
+            'student_name'       => $txn['student_name'],
+            'student_email'      => $txn['student_email'] ?? '',
+            'course_name'        => $txn['course_name'] ?? '',
+            'batch_name'         => $txn['batch_name'] ?? '',
+            'course_fee'         => floatval($txn['amount_due']),
+            'paid_amount'        => $totalPaid,
+            // 'remaining' is computed (= total - paid) not stored; passed for display
+            'remaining'          => max(0, floatval($txn['amount_due']) - floatval($txn['record_paid'])),
+            'fine_amount'        => $txn['fine_applied'] ?? 0,
+            'address'            => $txn['student_address'] ?? '',
+            'contact_number'     => $txn['phone'] ?? '',
+            'payment_mode'       => $txn['payment_method'],
+            'transaction_id'     => $txn['id'],
+            'remarks'            => $txn['notes'] ?? '',
+            'items'              => $items,
+            // Dynamic user attribution – from authenticated session
+            'received_by_name'   => $receivedByName,
+            'received_by_role'   => $receivedByRole,
         ];
 
         ob_start();
-        $isDownload = true;
+        $isDownload = false; // PDF generation is handled by Dompdf, not html2pdf.js
         require base_path('scripts/receipt_template.php');
         return ob_get_clean();
     }

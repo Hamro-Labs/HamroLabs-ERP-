@@ -218,46 +218,6 @@ try {
             echo json_encode(['success' => true, 'message' => 'Profile updated successfully']);
             break;
         
-        case 'change_password':
-            if ($method !== 'POST') {
-                echo json_encode(['success' => false, 'message' => 'Method not allowed']);
-                exit;
-            }
-            
-            $input = json_decode(file_get_contents('php://input'), true);
-            if (!$input) $input = $_POST;
-            
-            $currentPassword = $input['current_password'] ?? '';
-            $newPassword = $input['new_password'] ?? '';
-            
-            if (empty($currentPassword) || empty($newPassword)) {
-                echo json_encode(['success' => false, 'message' => 'Current and new password are required']);
-                exit;
-            }
-            
-            if (strlen($newPassword) < 6) {
-                echo json_encode(['success' => false, 'message' => 'Password must be at least 6 characters']);
-                exit;
-            }
-            
-            // Verify current password
-            $stmt = $db->prepare("SELECT password FROM users WHERE id = :uid AND tenant_id = :tid LIMIT 1");
-            $stmt->execute(['uid' => $userId, 'tid' => $tenantId]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if (!$user || !password_verify($currentPassword, $user['password'])) {
-                echo json_encode(['success' => false, 'message' => 'Current password is incorrect']);
-                exit;
-            }
-            
-            // Update password
-            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-            $stmt = $db->prepare("UPDATE users SET password = :pwd, updated_at = NOW() WHERE id = :uid");
-            $stmt->execute(['pwd' => $hashedPassword, 'uid' => $userId]);
-            
-            echo json_encode(['success' => true, 'message' => 'Password changed successfully']);
-            break;
-            
         case 'academic_history':
             // Get academic history (enrollments, results, etc.)
             $stmt = $db->prepare("
@@ -278,7 +238,7 @@ try {
                 'data' => $enrollments
             ]);
             break;
-            
+
         case 'change_password':
             if ($method !== 'POST') {
                 echo json_encode(['success' => false, 'message' => 'Method not allowed']);

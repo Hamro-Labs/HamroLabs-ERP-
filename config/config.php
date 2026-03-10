@@ -4,17 +4,37 @@
  * Platform Blueprint V3.0
  */
 
+// Path Constants - must be defined first
+if (!defined('APP_ROOT')) define('APP_ROOT', realpath(__DIR__ . '/../'));
+
+// Load environment variables from .env
+if (file_exists(APP_ROOT . '/.env')) {
+    $lines = file(APP_ROOT . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($key, $value) = explode('=', $line, 2);
+            $key = trim($key);
+            $value = trim($value);
+            if (!getenv($key)) {
+                putenv("$key=$value");
+            }
+        }
+    }
+}
+
 // Database Configuration
-if (!defined('DB_HOST')) define('DB_HOST', 'localhost');
-if (!defined('DB_NAME')) define('DB_NAME', 'hamrolabs_db');
-if (!defined('DB_USER')) define('DB_USER', 'root');
-if (!defined('DB_PASS')) define('DB_PASS', '');
+if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: '127.0.0.1');
+if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_DATABASE') ?: 'hamrolabs_db');
+if (!defined('DB_USER')) define('DB_USER', getenv('DB_USERNAME') ?: 'root');
+if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASSWORD') ?: '');
 
 // Application Configuration
-if (!defined('APP_NAME')) define('APP_NAME', 'Hamro ERP');
+if (!defined('APP_NAME')) define('APP_NAME', getenv('APP_NAME') ?: 'Hamro ERP');
 if (!defined('APP_VERSION')) define('APP_VERSION', '3.0');
-if (!defined('APP_URL')) define('APP_URL', 'http://localhost/erp'); // Adjusted to project root
-if (!defined('APP_ENV')) define('APP_ENV', 'development'); // development, production
+
+if (!defined('APP_URL')) define('APP_URL', getenv('APP_URL') ?: 'http://localhost/erp');
+if (!defined('APP_ENV')) define('APP_ENV', getenv('APP_ENV') ?: 'development');
 
 // Path Constants
 if (!defined('APP_ROOT')) define('APP_ROOT', realpath(__DIR__ . '/../'));

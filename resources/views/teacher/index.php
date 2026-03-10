@@ -35,10 +35,14 @@ include VIEWS_PATH . '/layouts/header.php';
                 <!-- Teacher Dropdown -->
                 <div style="position:relative;">
                     <div class="u-chip" id="userChip">
-                        <div class="u-av">RP</div>
+                        <?php 
+                        $uName = $_SESSION['userData']['name'] ?? 'Teacher';
+                        $initials = strtoupper(substr($uName, 0, 2));
+                        ?>
+                        <div class="u-av"><?= $initials ?></div>
                         <div style="display:flex; flex-direction:column; margin-left:8px; line-height:1.2;">
-                            <span style="font-size:12px; font-weight:700;">Ramesh Poudel</span>
-                            <span style="font-size:10px; opacity:0.8;">Senior Teacher</span>
+                            <span style="font-size:12px; font-weight:700;"><?= htmlspecialchars($uName) ?></span>
+                            <span style="font-size:10px; opacity:0.8;">Teacher</span>
                         </div>
                         <i class="fa-solid fa-chevron-down" style="font-size:9px; margin-left:6px; opacity:0.7;"></i>
                     </div>
@@ -48,7 +52,7 @@ include VIEWS_PATH . '/layouts/header.php';
                         <a href="javascript:void(0)" onclick="goNav('profile', 'leave-history')" style="display:flex; align-items:center; gap:10px; padding:10px; font-size:13px; color:var(--text-dark); text-decoration:none; border-radius:8px;"><i class="fa-solid fa-calendar-plus" style="color:var(--amber)"></i> Leave Application</a>
                         <a href="javascript:void(0)" onclick="goNav('profile', 'salary-slips')" style="display:flex; align-items:center; gap:10px; padding:10px; font-size:13px; color:var(--text-dark); text-decoration:none; border-radius:8px;"><i class="fa-solid fa-wallet" style="color:var(--green)"></i> Salary Slips</a>
                         <div style="height:1px; background:var(--card-border); margin:6px 0;"></div>
-                        <a href="#" style="display:flex; align-items:center; gap:10px; padding:10px; font-size:13px; color:var(--red); text-decoration:none; border-radius:8px;"><i class="fa-solid fa-power-off"></i> Logout</a>
+                        <a href="<?php echo APP_URL; ?>/auth/logout" style="display:flex; align-items:center; gap:10px; padding:10px; font-size:13px; color:var(--red); text-decoration:none; border-radius:8px;"><i class="fa-solid fa-power-off"></i> Logout</a>
                     </div>
                 </div>
             </div>
@@ -77,13 +81,13 @@ include VIEWS_PATH . '/layouts/header.php';
         </main>
 
     </div>
-
-
-
         <!-- Custom Scripts -->
     <script src="<?php echo APP_URL; ?>/public/assets/js/pwa-handler.js"></script>
     <script src="<?php echo APP_URL; ?>/public/assets/js/ia-study-materials.js"></script>
     <script src="<?php echo APP_URL; ?>/public/assets/js/ia-lms.js"></script>
+    <script src="<?php echo APP_URL; ?>/public/assets/js/ta-profile.js"></script>
+    <script src="<?php echo APP_URL; ?>/public/assets/js/ta-classes.js"></script>
+    <script src="<?php echo APP_URL; ?>/public/assets/js/ta-payment.js"></script>
     <script src="<?php echo APP_URL; ?>/public/assets/js/teacher-updated.js"></script>
     <script src="<?php echo APP_URL; ?>/public/assets/js/breadcrumb.js"></script>
     <script>

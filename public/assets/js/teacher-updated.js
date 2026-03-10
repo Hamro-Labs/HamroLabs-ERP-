@@ -157,171 +157,144 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderDashboard() {
-        mainContent.innerHTML = `
-            <div class="pg fu">
-                <div class="pg-head">
-                    <div class="pg-title">Namaste, Ramesh Sir 👋</div>
-                    <div style="font-size:12px; color:var(--text-body); margin-top:4px;">
-                        Pioneer Loksewa Institute · Today is Shrawan 22, 2081 (BS)
-                    </div>
-                </div>
+    async function renderDashboard() {
+        mainContent.innerHTML = '<div class="pg fu"><div style="text-align:center; padding:40px;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p>Loading Dashboard...</p></div></div>';
 
-                <!-- STAT GRID -->
-                <div class="sg">
-                    <div class="sc">
-                        <div class="sc-top"><div class="sc-ico ic-green"><i class="fa-solid fa-chalkboard-user"></i></div><div class="bdg bg-t">3 Today</div></div>
-                        <div class="sc-val">3</div>
-                        <div class="sc-lbl">Today's Lectures</div>
-                    </div>
-                    <div class="sc">
-                        <div class="sc-top"><div class="sc-ico ic-green"><i class="fa-solid fa-user-check"></i></div><div class="bdg bg-t"><i class="fa-solid fa-caret-up"></i> 2%</div></div>
-                        <div class="sc-val">82%</div>
-                        <div class="sc-lbl">This Week's Attendance</div>
-                    </div>
-                    <div class="sc">
-                        <div class="sc-top"><div class="sc-ico ic-amber"><i class="fa-solid fa-file-pen"></i></div><div class="bdg bg-r">12 pending</div></div>
-                        <div class="sc-val">12</div>
-                        <div class="sc-lbl">Pending Grading</div>
-                    </div>
-                    <div class="sc">
-                        <div class="sc-top"><div class="sc-ico ic-purple"><i class="fa-solid fa-award"></i></div><div class="bdg bg-t">Last Exam</div></div>
-                        <div class="sc-val">74.5</div>
-                        <div class="sc-lbl">Avg. Exam Score</div>
-                    </div>
-                </div>
+        try {
+            const res = await fetch(`${APP_URL}/api/teacher/dashboard`);
+            const json = await res.json();
+            
+            if (!json.success) {
+                mainContent.innerHTML = `<div class="pg fu"><div class="alert alert-danger">${json.message}</div></div>`;
+                return;
+            }
 
-                <!-- QUICK ACTIONS -->
-                <div class="qa-grid">
-                    <button class="qa-btn" onclick="goNav('attendance', 'mark')">
-                        <div class="qa-ico" style="color:var(--green)"><i class="fa-solid fa-calendar-check"></i></div>
-                        <div class="qa-lbl">Mark Attendance</div>
-                    </button>
-                    <button class="qa-btn" onclick="goNav('lms', 'materials')">
-                        <div class="qa-ico" style="color:var(--teal)"><i class="fa-solid fa-file-arrow-up"></i></div>
-                        <div class="qa-lbl">Upload Material</div>
-                    </button>
-                    <button class="qa-btn" onclick="goNav('assignments', 'create')">
-                        <div class="qa-ico" style="color:var(--amber)"><i class="fa-solid fa-plus-circle"></i></div>
-                        <div class="qa-lbl">Create Assignment</div>
-                    </button>
-                    <button class="qa-btn" onclick="goNav('exams', 'qb')">
-                        <div class="qa-ico" style="color:var(--purple)"><i class="fa-solid fa-database"></i></div>
-                        <div class="qa-lbl">Add Question</div>
-                    </button>
-                    <button class="qa-btn" onclick="goNav('profile', 'salary-slips')">
-                        <div class="qa-ico" style="color:var(--red)"><i class="fa-solid fa-wallet"></i></div>
-                        <div class="qa-lbl">Download Slip</div>
-                    </button>
-                </div>
-
-                <div class="g65">
-                    <!-- CLASS SCHEDULE -->
-                    <div>
-                        <div class="card mb-20">
-                            <div class="ct"><i class="fa-solid fa-clock"></i> Today's Classes</div>
-                            <div class="cls-card ongoing">
-                                <div class="cls-time">07:00 AM</div>
-                                <div class="cls-info">
-                                    <span class="cls-subj">General Knowledge</span>
-                                    <span class="cls-batch">Kharidar Batch A · Room 201</span>
-                                </div>
-                                <div class="bdg bg-green">ATTENDANCE MARKED</div>
+            const data = json.data;
+            const tInfo = data.teacher_info || {};
+            const stats = data.stats || {};
+            const todayClasses = data.today_classes || [];
+            
+            let classesHtml = '';
+            if (todayClasses.length === 0) {
+                classesHtml = '<div style="padding:15px; color:var(--text-light); text-align:center;">No classes scheduled for today.</div>';
+            } else {
+                todayClasses.forEach(cls => {
+                    let badgeClass = 'bg-t';
+                    if (cls.status === 'ONGOING') badgeClass = 'bg-green';
+                    else if (cls.status === 'UPCOMING') badgeClass = 'bg-amber';
+                    
+                    classesHtml += `
+                        <div class="cls-card ${cls.status === 'ONGOING' || cls.status === 'UPCOMING' ? (cls.status === 'ONGOING' ? 'ongoing' : 'upcoming') : ''}">
+                            <div class="cls-time">${new Date('1970-01-01T' + cls.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                            <div class="cls-info">
+                                <span class="cls-subj">${cls.subject_name || 'Subject'}</span>
+                                <span class="cls-batch">${cls.batch_name || 'Batch'} · Room ${cls.room || 'TBA'}</span>
                             </div>
-                            <div class="cls-card upcoming">
-                                <div class="cls-time">10:00 AM</div>
-                                <div class="cls-info">
-                                    <span class="cls-subj">Lok Sewa Ain</span>
-                                    <span class="cls-batch">Section Officer B · Online</span>
-                                </div>
-                                <div class="bdg bg-amber">PENDING</div>
-                            </div>
-                            <div class="cls-card">
-                                <div class="cls-time">05:00 PM</div>
-                                <div class="cls-info">
-                                    <span class="cls-subj">Current Affairs</span>
-                                    <span class="cls-batch">Nayab Subba Eve · Room 104</span>
-                                </div>
-                                <div class="bdg bg-t">NOT STARTED</div>
-                            </div>
+                            <div class="bdg ${badgeClass}">${cls.status}</div>
                         </div>
+                    `;
+                });
+            }
 
-                        <!-- ANNOUNCEMENTS -->
-                        <div class="card">
-                            <div class="ct"><i class="fa-solid fa-bullhorn"></i> Announcements</div>
-                            <div style="display:flex; flex-direction:column; gap:12px;">
-                                <div style="display:flex; gap:12px; align-items:start; padding-bottom:12px; border-bottom:1px solid var(--card-border);">
-                                    <div style="background:var(--green-lt); color:var(--green); padding:8px; border-radius:8px; font-size:14px;"><i class="fa-solid fa-megaphone"></i></div>
-                                    <div style="flex:1;">
-                                        <div style="font-size:13px; font-weight:600; color:var(--text-dark);">Staff Meeting at 4 PM Today</div>
-                                        <div style="font-size:11px; color:var(--text-light); margin-top:2px;">Institute-wide · Just now</div>
-                                    </div>
-                                </div>
-                                <div style="display:flex; gap:12px; align-items:start; padding-bottom:12px; border-bottom:1px solid var(--card-border);">
-                                    <div style="background:var(--amber-lt); color:var(--amber); padding:8px; border-radius:8px; font-size:14px;"><i class="fa-solid fa-calendar-exclamation"></i></div>
-                                    <div style="flex:1;">
-                                        <div style="font-size:13px; font-weight:600; color:var(--text-dark);">Friday Exam Schedule Updated</div>
-                                        <div style="font-size:11px; color:var(--text-light); margin-top:2px;">Kharidar Batch A · 2 hours ago</div>
-                                    </div>
-                                </div>
-                                <div style="display:flex; gap:12px; align-items:start;">
-                                    <div style="background:var(--green-lt); color:var(--green); padding:8px; border-radius:8px; font-size:14px;"><i class="fa-solid fa-circle-check"></i></div>
-                                    <div style="flex:1;">
-                                        <div style="font-size:13px; font-weight:600; color:var(--text-dark);">New Study Material Guidelines</div>
-                                        <div style="font-size:11px; color:var(--text-light); margin-top:2px;">Admin · Yesterday</div>
-                                    </div>
-                                </div>
-                            </div>
+            mainContent.innerHTML = `
+                <div class="pg fu">
+                    <div class="pg-head">
+                        <div class="pg-title">Namaste, ${tInfo.full_name || 'Teacher'} 👋</div>
+                        <div style="font-size:12px; color:var(--text-body); margin-top:4px;">
+                            ${tInfo.institute_name || 'Institute'} · Today is ${new Date().toLocaleDateString('en-US', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}
                         </div>
                     </div>
 
-                    <!-- SYLLABUS & LEAVE -->
-                    <div>
-                        <div class="card mb-20">
-                            <div class="ct"><i class="fa-solid fa-chart-line"></i> Syllabus Coverage</div>
-                            <div class="pr-row">
-                                <div class="pr-lbl">Pol. History</div>
-                                <div class="pr-tr"><div class="pr-fi" style="width:100%; background:var(--green);"></div></div>
-                                <div style="font-size:10px; color:var(--text-light);">100%</div>
+                    <!-- STAT GRID -->
+                    <div class="sg">
+                        <div class="sc">
+                            <div class="sc-top"><div class="sc-ico ic-green"><i class="fa-solid fa-chalkboard-user"></i></div><div class="bdg bg-t">${stats.today_class_count} Today</div></div>
+                            <div class="sc-val">${stats.today_class_count}</div>
+                            <div class="sc-lbl">Today's Lectures</div>
+                        </div>
+                        <div class="sc">
+                            <div class="sc-top"><div class="sc-ico ic-green"><i class="fa-solid fa-user-check"></i></div><div class="bdg bg-t"><i class="fa-solid fa-caret-up"></i> 2%</div></div>
+                            <div class="sc-val">${stats.attendance_rate}%</div>
+                            <div class="sc-lbl">This Week's Attendance</div>
+                        </div>
+                        <div class="sc">
+                            <div class="sc-top"><div class="sc-ico ic-amber"><i class="fa-solid fa-file-pen"></i></div><div class="bdg bg-r">${stats.pending_assignments} pending</div></div>
+                            <div class="sc-val">${stats.pending_assignments}</div>
+                            <div class="sc-lbl">Pending Grading</div>
+                        </div>
+                        <div class="sc">
+                            <div class="sc-top"><div class="sc-ico ic-purple"><i class="fa-solid fa-award"></i></div><div class="bdg bg-t">Questions</div></div>
+                            <div class="sc-val">${stats.submitted_questions}</div>
+                            <div class="sc-lbl">Submitted Questions</div>
+                        </div>
+                    </div>
+
+                    <!-- QUICK ACTIONS -->
+                    <div class="qa-grid">
+                        <button class="qa-btn" onclick="goNav('attendance', 'mark')">
+                            <div class="qa-ico" style="color:var(--green)"><i class="fa-solid fa-calendar-check"></i></div>
+                            <div class="qa-lbl">Mark Attendance</div>
+                        </button>
+                        <button class="qa-btn" onclick="goNav('lms', 'materials')">
+                            <div class="qa-ico" style="color:var(--teal)"><i class="fa-solid fa-file-arrow-up"></i></div>
+                            <div class="qa-lbl">Upload Material</div>
+                        </button>
+                        <button class="qa-btn" onclick="goNav('assignments', 'create')">
+                            <div class="qa-ico" style="color:var(--amber)"><i class="fa-solid fa-plus-circle"></i></div>
+                            <div class="qa-lbl">Create Assignment</div>
+                        </button>
+                        <button class="qa-btn" onclick="goNav('exams', 'qb')">
+                            <div class="qa-ico" style="color:var(--purple)"><i class="fa-solid fa-database"></i></div>
+                            <div class="qa-lbl">Add Question</div>
+                        </button>
+                        <button class="qa-btn" onclick="goNav('profile', 'salary-slips')">
+                            <div class="qa-ico" style="color:var(--red)"><i class="fa-solid fa-wallet"></i></div>
+                            <div class="qa-lbl">Download Slip</div>
+                        </button>
+                    </div>
+
+                    <div class="g65">
+                        <!-- CLASS SCHEDULE -->
+                        <div>
+                            <div class="card mb-20">
+                                <div class="ct"><i class="fa-solid fa-clock"></i> Today's Classes</div>
+                                ${classesHtml}
                             </div>
-                            <div class="pr-row">
-                                <div class="pr-lbl">Constitution</div>
-                                <div class="pr-tr"><div class="pr-fi" style="width:75%; background:var(--teal);"></div></div>
-                                <div style="font-size:10px; color:var(--text-light);">75%</div>
-                            </div>
-                            <div class="pr-row">
-                                <div class="pr-lbl">Public Admin</div>
-                                <div class="pr-tr"><div class="pr-fi" style="width:40%; background:var(--amber);"></div></div>
-                                <div style="font-size:10px; color:var(--text-light);">40%</div>
-                            </div>
-                            <button class="btn bs" style="width:100%; justify-content:center; margin-top:10px; font-size:11px;">Update Progress</button>
                         </div>
 
-                        <div class="card">
-                            <div class="ct"><i class="fa-solid fa-user-clock"></i> Leave Balance</div>
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                <span style="font-size:12px; color:var(--text-body);">Casual Leaves</span>
-                                <span style="font-size:12px; font-weight:700;">4/12 used</span>
-                            </div>
-                            <div class="prog-t"><div class="prog-f" style="width:33%; background:var(--green);"></div></div>
-                            <div style="display:flex; justify-content:space-between; margin-top:12px; margin-bottom:10px;">
-                                <span style="font-size:12px; color:var(--text-body);">Sick Leaves</span>
-                                <span style="font-size:12px; font-weight:700;">1/8 used</span>
-                            </div>
-                            <div class="prog-t"><div class="prog-f" style="width:12%; background:var(--red);"></div></div>
-                            
-                            <div style="margin-top:20px; padding-top:15px; border-top:1px solid var(--card-border);">
-                                <div style="font-size:11px; font-weight:600; color:var(--text-light); text-transform:uppercase; margin-bottom:8px;">Recent Status</div>
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <span style="font-size:12px; color:var(--text-dark);">Medical Leave (2 days)</span>
-                                    <span class="bdg bg-amber" style="font-size:9px;">PENDING</span>
+                        <!-- SYLLABUS & LEAVE -->
+                        <div>
+                            <div class="card mb-20">
+                                <div class="ct"><i class="fa-solid fa-chart-line"></i> Syllabus Coverage</div>
+                                <div class="pr-row">
+                                    <div class="pr-lbl">Pol. History</div>
+                                    <div class="pr-tr"><div class="pr-fi" style="width:100%; background:var(--green);"></div></div>
+                                    <div style="font-size:10px; color:var(--text-light);">100%</div>
                                 </div>
+                                <div class="pr-row">
+                                    <div class="pr-lbl">Constitution</div>
+                                    <div class="pr-tr"><div class="pr-fi" style="width:75%; background:var(--teal);"></div></div>
+                                    <div style="font-size:10px; color:var(--text-light);">75%</div>
+                                </div>
+                                <button class="btn bs" style="width:100%; justify-content:center; margin-top:10px; font-size:11px;">Update Progress</button>
+                            </div>
+
+                            <div class="card">
+                                <div class="ct"><i class="fa-solid fa-user-clock"></i> Leave Balance</div>
+                                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                    <span style="font-size:12px; color:var(--text-body);">Casual Leaves</span>
+                                    <span style="font-size:12px; font-weight:700;">4/12 used</span>
+                                </div>
+                                <div class="prog-t"><div class="prog-f" style="width:33%; background:var(--green);"></div></div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        } catch (error) {
+            console.error('Render Dashboard Error:', error);
+            mainContent.innerHTML = `<div class="pg fu"><div class="alert alert-danger">Failed to load dashboard data.</div></div>`;
+        }
     }
 
     function renderGenericPage() {
@@ -329,6 +302,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const dashIdx = activeNav.indexOf('-');
         const id    = dashIdx === -1 ? activeNav : activeNav.slice(0, dashIdx);
         const subId = dashIdx === -1 ? null       : activeNav.slice(dashIdx + 1);
+        
+        // Dispatch to actual modules if implemented
+        if (id === 'profile' && subId === 'personal') {
+            if (typeof renderTeacherProfile === 'function') return renderTeacherProfile();
+        }
+        if (id === 'profile' && subId === 'salary-slips') {
+            if (typeof renderSalarySlips === 'function') return renderSalarySlips();
+        }
+        if (id === 'classes') {
+            if (typeof renderMyClasses === 'function') return renderMyClasses();
+            if (typeof taSwitchClassTab === 'function') {
+                 // For sub-tabs if called directly via nav, e.g. classes-today or classes-timetable
+                 if (subId === 'today' || subId === 'timetable') {
+                     renderMyClasses().then(() => {
+                         taSwitchClassTab(subId);
+                     });
+                     return;
+                 }
+            }
+        }
+
         const navItem = NAV.find(n => n.id === id);
         if (navItem) {
             if (subId && navItem.sub) {

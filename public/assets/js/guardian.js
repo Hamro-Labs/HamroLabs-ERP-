@@ -179,150 +179,202 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderDashboard() {
-        mainContent.innerHTML = `
-            <div class="pg fu">
-                <div class="pg-header">
-                    <div class="pg-title">Welcome back, Prakash ji 👋</div>
-                    <div class="pg-sub">Monitoring Rohan Sharma · Kharidar Prep Batch · Roll: HL-2081-KH-042</div>
+    async function renderDashboard() {
+        mainContent.innerHTML = '<div class="pg fu" style="display:flex;align-items:center;justify-content:center;height:50vh;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>';
+
+        try {
+            const res = await fetch(`${APP_URL}/api/guardian/dashboard`);
+            const json = await res.json();
+            
+            if (!json.success) {
+                mainContent.innerHTML = `<div class="pg fu"><div class="alert alert-danger">${json.message}</div></div>`;
+                return;
+            }
+
+            const data = json.data;
+            const gInfo = data.guardian_info || {};
+            const sInfo = data.student_info || {};
+            const stats = data.stats || {};
+            
+            const gName = gInfo.full_name || 'Guardian';
+            const sName = sInfo.full_name || 'Student';
+            const sBatch = sInfo.batch_name || 'Batch';
+            const sRoll = sInfo.roll_no || 'Roll TBA';
+
+            let examsHtml = '';
+            if (data.recent_exams && data.recent_exams.length > 0) {
+                data.recent_exams.forEach(ex => {
+                    const score = ex.score || 0;
+                    const total = ex.total_marks || 100;
+                    examsHtml += `
+                        <div class="ex-row">
+                            <div class="ex-ico" style="background:#EEF2FF; color:#6366F1;"><i class="fa-solid fa-file-pen"></i></div>
+                            <div class="ex-info">
+                                <div class="ex-subj">${ex.exam_title || 'Exam'}</div>
+                                <div class="ex-meta">${ex.exam_type || 'Test'} · ${ex.exam_date || ''}</div>
+                            </div>
+                            <div class="ex-score">
+                                <div class="ex-val">${score}/${total}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                examsHtml = '<div style="padding:15px; color:var(--text-light); text-align:center;">No recent exams.</div>';
+            }
+
+            // Update sidebar info
+            const sbChildInfo = document.getElementById('sbChildInfo');
+            if (sbChildInfo) {
+                const init = sName.substring(0, 2).toUpperCase();
+                sbChildInfo.innerHTML = `
+                    <div class="child-av">${init}</div>
+                    <div class="child-meta">
+                        <span class="child-name">${sName}</span>
+                        <span class="child-roll">Roll: ${sRoll}</span>
+                    </div>
+                `;
+            }
+
+            let feeHtml = '';
+            if (data.fee_status && data.fee_status.length > 0) {
+                data.fee_status.forEach(fee => {
+                    const isPaid = fee.status === 'paid';
+                    feeHtml += `
+                        <div class="fee-item">
+                            <div class="fee-info">
+                                <div class="fee-name">${fee.fee_name || 'Fee'}</div>
+                                <div class="fee-due">${isPaid ? 'Paid on' : 'Due'}: ${fee.due_date || 'N/A'}</div>
+                            </div>
+                            <div class="fee-amt ${isPaid ? 'pg' : 'pr'}">
+                                ${isPaid ? 'PAID' : 'Rs. ' + (fee.amount || 0)}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                feeHtml = '<div style="padding:15px; color:var(--text-light); text-align:center;">No fee records found.</div>';
+            }
+
+            let noticeHtml = '';
+            if (data.recent_notices && data.recent_notices.length > 0) {
+                data.recent_notices.forEach(not => {
+                    noticeHtml += `
+                        <div class="ex-row" style="margin-bottom:10px;">
+                            <div class="ex-info">
+                                <div class="ex-subj" style="font-size:13px; font-weight:600;">${not.title || 'Notice'}</div>
+                                <div class="ex-meta" style="font-size:11px; margin-top:2px;">${not.created_at || 'Recently'}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                noticeHtml = '<div style="padding:15px; color:var(--text-light); text-align:center;">No new notices.</div>';
+            }
+
+            mainContent.innerHTML = `
+                <div class="pg fu">
+                    <div class="pg-header">
+                        <div class="pg-title">Namaste, ${gName} 👋</div>
+                        <div class="pg-sub">Monitoring ${sName} · ${sBatch} · Roll: ${sRoll}</div>
+                    </div>
+
+                    <!-- QUICK ACTIONS -->
+                    <div class="qa-grid">
+                        <button class="qa-btn" onclick="goNav('attendance', 'sum')">
+                            <i class="fa-solid fa-chart-bar" style="color:var(--green)"></i> View Attendance Report
+                        </button>
+                        <button class="qa-btn" onclick="goNav('fee', 'receipts')">
+                            <i class="fa-solid fa-file-invoice-dollar" style="color:var(--amber)"></i> Download Fee Receipt
+                        </button>
+                        <button class="qa-btn primary" onclick="goNav('messages', 'contact')">
+                            <i class="fa-solid fa-envelope"></i> Message Institute Admin
+                        </button>
+                    </div>
+
+                    <!-- STAT GRID -->
+                    <div class="sg">
+                        <div class="sc green">
+                            <div class="sc-ico green"><i class="fa-solid fa-calendar-check"></i></div>
+                            <div class="sc-lbl">Child's Attendance</div>
+                            <div class="att-ring">
+                                <div class="att-pct">${stats.attendance_rate || 0}%</div>
+                                <div style="font-size:11px; color:var(--text-body); line-height:1.2;">Month's Presence: ${stats.attendance_present} / ${stats.attendance_total} days</div>
+                            </div>
+                        </div>
+                        <div class="sc blue">
+                            <div class="sc-ico blue"><i class="fa-solid fa-trophy"></i></div>
+                            <div class="sc-lbl">Latest Exam Score</div>
+                            <div class="sc-val">${stats.latest_exam_score !== null ? stats.latest_exam_score + '%' : 'N/A'}</div>
+                            <div class="sc-sub">Recent Test Performance</div>
+                        </div>
+                        <div class="sc amber">
+                            <div class="sc-ico amber"><i class="fa-solid fa-wallet"></i></div>
+                            <div class="sc-lbl">Fee Dues</div>
+                            <div class="sc-val">Rs. ${stats.fee_dues.toLocaleString()}</div>
+                            <div class="sc-sub">Outstanding Amount</div>
+                        </div>
+                        <div class="sc purple">
+                            <div class="sc-ico purple"><i class="fa-solid fa-bullhorn"></i></div>
+                            <div class="sc-lbl">Recent Notices</div>
+                            <div class="sc-val">${stats.notices_count || 0} New</div>
+                            <div class="sc-sub">Relevant to Child's Batch</div>
+                        </div>
+                    </div>
+
+                    <div class="g64">
+                        <div>
+                            <!-- EXAM RESULTS -->
+                            <div class="card">
+                                <div class="card-h">
+                                    <div class="card-t"><i class="fa-solid fa-square-poll-vertical" style="color:var(--green)"></i> Recent Exam Results</div>
+                                    <a href="javascript:void(0)" onclick="goNav('exams','hist')" class="btn-l" style="font-size:11px; color:var(--green); font-weight:700; text-decoration:none;">View All</a>
+                                </div>
+                                <div class="card-b">
+                                    ${examsHtml}
+                                </div>
+                            </div>
+
+                            <!-- RECENT MESSAGES -->
+                            <div class="contact-zone" style="margin-top:20px;">
+                                <div class="contact-t"><i class="fa-solid fa-headset"></i> Contact Institute Admin</div>
+                                <div class="contact-d">Direct line to the academic counselor. Type your message below to start a conversation.</div>
+                                <textarea class="contact-box" style="width:100%; border:1px solid #ddd; padding:10px; border-radius:8px;" rows="3" placeholder="Type your inquiry here regarding ${sName}'s progress..."></textarea>
+                                <button class="btn btn-primary mt-10" onclick="alert('Message sent to admin!')">Send Message</button>
+                                <div style="clear:both;"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <!-- FEE STATUS -->
+                            <div class="card">
+                                <div class="card-h">
+                                    <div class="card-t"><i class="fa-solid fa-credit-card" style="color:var(--amber)"></i> Fee Status</div>
+                                </div>
+                                <div class="card-b">
+                                    ${feeHtml}
+                                    <button class="btn bs" style="width:100%; margin-top:16px; font-size:12px; background:var(--green); color:#fff; border:none; padding:10px; border-radius:6px; font-weight:800; cursor:pointer;" onclick="goNav('fee','dues')">Pay Outstanding Online</button>
+                                </div>
+                            </div>
+
+                            <!-- NOTICE BOARD -->
+                            <div class="card" style="margin-top:20px;">
+                                <div class="card-h">
+                                    <div class="card-t"><i class="fa-solid fa-bullhorn" style="color:var(--purple)"></i> Recent Notices</div>
+                                </div>
+                                <div class="card-b" style="padding:0 18px 18px;">
+                                    ${noticeHtml}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            `;
 
-                <!-- QUICK ACTIONS (PRD Spec) -->
-                <div class="qa-grid">
-                    <button class="qa-btn" onclick="goNav('attendance', 'sum')">
-                        <i class="fa-solid fa-chart-bar" style="color:var(--green)"></i> View Attendance Report
-                    </button>
-                    <button class="qa-btn" onclick="goNav('fee', 'receipts')">
-                        <i class="fa-solid fa-file-invoice-dollar" style="color:var(--amber)"></i> Download Fee Receipt
-                    </button>
-                    <button class="qa-btn primary" onclick="goNav('messages', 'contact')">
-                        <i class="fa-solid fa-envelope"></i> Message Institute Admin
-                    </button>
-                </div>
-
-                <!-- STAT GRID -->
-                <div class="sg">
-                    <div class="sc green">
-                        <div class="sc-ico green"><i class="fa-solid fa-calendar-check"></i></div>
-                        <div class="sc-lbl">Child's Attendance</div>
-                        <div class="att-ring">
-                            <div class="att-pct">80%</div>
-                            <div style="font-size:11px; color:var(--text-body); line-height:1.2;">Month's Presence: 20 / 25 days<br><span class="bdg bg-t">STABLE</span></div>
-                        </div>
-                    </div>
-                    <div class="sc blue">
-                        <div class="sc-ico blue"><i class="fa-solid fa-trophy"></i></div>
-                        <div class="sc-lbl">Latest Exam Score</div>
-                        <div class="sc-val">78%</div>
-                        <div class="sc-sub"><span class="bdg bg-b">Rank #8 / 42</span> · Mock Set 4</div>
-                    </div>
-                    <div class="sc amber">
-                        <div class="sc-ico amber"><i class="fa-solid fa-wallet"></i></div>
-                        <div class="sc-lbl">Fee Dues</div>
-                        <div class="sc-val">NPR 2,500</div>
-                        <div class="sc-sub"><span class="bdg bg-r">Next Due: Falgun 12</span> · Installment #3</div>
-                    </div>
-                    <div class="sc purple">
-                        <div class="sc-ico purple"><i class="fa-solid fa-bullhorn"></i></div>
-                        <div class="sc-lbl">Recent Notices</div>
-                        <div class="sc-val">3 New</div>
-                        <div class="sc-sub">Relevant to Child's Batch</div>
-                    </div>
-                </div>
-
-                <div class="g64">
-                    <div>
-                        <!-- EXAM RESULTS -->
-                        <div class="card">
-                            <div class="card-h">
-                                <div class="card-t"><i class="fa-solid fa-square-poll-vertical" style="color:var(--green)"></i> Recent Exam Results</div>
-                                <a href="#" class="btn-l" style="font-size:11px; color:var(--green); font-weight:700; text-decoration:none;">View All</a>
-                            </div>
-                            <div class="card-b">
-                                <div class="ex-row">
-                                    <div class="ex-ico" style="background:#EEF2FF; color:#6366F1;">📐</div>
-                                    <div class="ex-info">
-                                        <div class="ex-subj">General Knowledge</div>
-                                        <div class="ex-meta">Mock Test #4 · July 18, 2081</div>
-                                    </div>
-                                    <div class="ex-score">
-                                        <div class="ex-val">82/100</div>
-                                        <div class="ex-rnk">Rank #4</div>
-                                    </div>
-                                </div>
-                                <div class="ex-row">
-                                    <div class="ex-ico" style="background:#ECFDF5; color:#10B981;">📜</div>
-                                    <div class="ex-info">
-                                        <div class="ex-subj">Lok Sewa Ain</div>
-                                        <div class="ex-meta">Sectional Test · July 12, 2081</div>
-                                    </div>
-                                    <div class="ex-score">
-                                        <div class="ex-val">74/100</div>
-                                        <div class="ex-rnk">Rank #11</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- RECENT MESSAGES -->
-                        <div class="contact-zone">
-                            <div class="contact-t"><i class="fa-solid fa-headset"></i> Contact Institute Admin</div>
-                            <div class="contact-d">Direct line to the academic counselor. Type your message below to start a conversation.</div>
-                            <div class="contact-box">Type your inquiry here regarding Rohan's progress...</div>
-                            <button class="contact-btn">Send Message</button>
-                            <div style="clear:both;"></div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <!-- FEE STATUS -->
-                        <div class="card">
-                            <div class="card-h">
-                                <div class="card-t"><i class="fa-solid fa-credit-card" style="color:var(--amber)"></i> Fee Status</div>
-                            </div>
-                            <div class="card-b">
-                                <div class="fee-item">
-                                    <div class="fee-info">
-                                        <div class="fee-name">Monthly Installment #3</div>
-                                        <div class="fee-due">Due: Falgun 12, 2081</div>
-                                    </div>
-                                    <div class="fee-amt pr">NPR 2,500</div>
-                                </div>
-                                <div class="fee-item">
-                                    <div class="fee-info">
-                                        <div class="fee-name">Mock Test Series Fee</div>
-                                        <div class="fee-due">Paid on: Falgun 01, 2081</div>
-                                    </div>
-                                    <div class="fee-amt pg">PAID</div>
-                                </div>
-                                <button class="btn bs" style="width:100%; margin-top:16px; font-size:12px; background:var(--green); color:#fff; border:none; padding:10px; border-radius:6px; font-weight:800; cursor:pointer;">Pay Outstanding Online</button>
-                            </div>
-                        </div>
-
-                        <!-- NOTICE BOARD -->
-                        <div class="card">
-                            <div class="card-h">
-                                <div class="card-t"><i class="fa-solid fa-bullhorn" style="color:var(--purple)"></i> Recent Notices</div>
-                            </div>
-                            <div class="card-b" style="padding:0 18px 18px;">
-                                <div class="ex-row">
-                                    <div class="ex-info">
-                                        <div class="ex-subj" style="font-size:12px;">Mid-term exam schedule released</div>
-                                        <div class="ex-meta">Yesterday at 4:30 PM</div>
-                                    </div>
-                                </div>
-                                <div class="ex-row">
-                                    <div class="ex-info">
-                                        <div class="ex-subj" style="font-size:12px;">No classes on Saturday (Falgun 09)</div>
-                                        <div class="ex-meta">2 days ago</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+        } catch (error) {
+            console.error('Render Dashboard Error:', error);
+            mainContent.innerHTML = `<div class="pg fu"><div class="alert alert-danger">Failed to load dashboard data.</div></div>`;
+        }
     }
 
     function renderGenericPage() {

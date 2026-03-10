@@ -635,6 +635,33 @@ Route::any('/api/student/library', function() {
     require_once app_path('Http/Controllers/Student/library.php');
 });
 
+// Teacher Portal API Routes
+Route::any('/api/teacher/dashboard', function() {
+    require_once app_path('Http/Controllers/Teacher/dashboard.php');
+});
+
+Route::any('/api/teacher/classes', function() {
+    require_once app_path('Http/Controllers/Teacher/classes.php');
+});
+
+Route::any('/api/teacher/attendance', function() {
+    require_once app_path('Http/Controllers/Teacher/attendance.php');
+});
+
+Route::any('/api/teacher/profile', function() {
+    require_once app_path('Http/Controllers/Teacher/profile.php');
+});
+
+Route::any('/api/teacher/payments', function() {
+    require_once app_path('Http/Controllers/Teacher/payments.php');
+});
+
+// Guardian Portal API Routes
+Route::any('/api/guardian/dashboard', function() {
+    require_once app_path('Http/Controllers/Guardian/dashboard.php');
+});
+
+
 Route::any('/api/student/profile', function() {
     require_once app_path('Http/Controllers/Student/profile.php');
 });
@@ -701,10 +728,43 @@ Route::any('/api/admin/automation-rules', function() {
 // Tenant Management Routes
 // Tenant Management Routes (Protected)
 Route::middleware(['auth.superadmin'])->group(function () {
+    // Super Admin SPA Pages - serve from resources/views/super-admin/
+    Route::get('/pages/super_admin/{page}', function ($page) {
+        $page = preg_replace('/\.php$/', '', $page);
+        $fileAttempts = [
+            resource_path("views/super-admin/{$page}.php") => resource_path("views/super-admin/{$page}.php"),
+            resource_path("views/super-admin/{$page}.blade.php") => resource_path("views/super-admin/{$page}.blade.php"),
+        ];
+        
+        foreach ($fileAttempts as $file) {
+            if (file_exists($file)) {
+                require_once $file;
+                return;
+            }
+        }
+        http_response_code(404);
+        echo 'Page not found';
+    });
+    
     Route::post('/api/super-admin/reports/generate', [App\Http\Controllers\SuperAdmin\ReportController::class, 'generate']);
     Route::get('/api/super_admin_stats.php', function() {
         require_once app_path('Http/Controllers/SuperAdmin/super_admin_stats.php');
     });
+    
+    // New SPA API endpoints
+    Route::get('/api/superadmin/TenantsApi.php', function() {
+        require_once app_path('Http/Controllers/SuperAdmin/TenantsApi.php');
+    });
+    Route::get('/api/superadmin/PlansApi.php', function() {
+        require_once app_path('Http/Controllers/SuperAdmin/PlansApi.php');
+    });
+    Route::get('/api/superadmin/RevenueApi.php', function() {
+        require_once app_path('Http/Controllers/SuperAdmin/RevenueApi.php');
+    });
+    Route::get('/api/superadmin/SupportApi.php', function() {
+        require_once app_path('Http/Controllers/SuperAdmin/SupportApi.php');
+    });
+    
     Route::get('/api/super-admin/tenants', function() {
         require_once app_path('Http/Controllers/tenants.php');
     });

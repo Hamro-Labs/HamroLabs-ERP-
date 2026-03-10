@@ -204,25 +204,71 @@ include VIEWS_PATH . '/layouts/header.php';
                     const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
                     field.setAttribute('type', type);
                 }
-                
-                function updatePassword() {
-                    const current = document.getElementById('currentPass').value;
-                    const newPass = document.getElementById('newPass').value;
-                    const confirm = document.getElementById('confirmPass').value;
-                    
-                    if (!current || !newPass || !confirm) {
-                        alert('Please fill all fields');
-                        return;
+
+                function showMsg(msg, isError) {
+                    let el = document.getElementById('pwMsg');
+                    if (!el) {
+                        el = document.createElement('div');
+                        el.id = 'pwMsg';
+                        el.style.cssText = 'padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px;';
+                        document.querySelector('.form-grp').before(el);
                     }
-                    
-                    if (newPass !== confirm) {
-                        alert('New passwords do not match');
-                        return;
-                    }
-                    
-                    alert('Password updated successfully!');
-                    window.location.href = 'student-profile-view.php';
+                    el.style.background = isError ? '#fee2e2' : '#dcfce7';
+                    el.style.color      = isError ? '#b91c1c' : '#166534';
+                    el.style.border     = isError ? '1px solid #fca5a5' : '1px solid #86efac';
+                    el.textContent = msg;
+                    el.style.display = 'block';
                 }
+
+                async function updatePassword() {
+                    const current = document.getElementById('currentPass').value.trim();
+                    const newPass  = document.getElementById('newPass').value.trim();
+                    const confirm  = document.getElementById('confirmPass').value.trim();
+                    const btn      = document.querySelector('button.btn.bt');
+
+                    if (!current || !newPass || !confirm) {
+                        showMsg('Please fill all fields.', true);
+                        return;
+                    }
+                    if (newPass !== confirm) {
+                        showMsg('New passwords do not match.', true);
+                        return;
+                    }
+                    if (newPass.length < 8) {
+                        showMsg('Password must be at least 8 characters.', true);
+                        return;
+                    }
+
+                    btn.disabled = true;
+                    btn.textContent = 'Updating…';
+
+                    try {
+                        const res = await fetch('<?= APP_URL ?>/api/student/profile?action=change_password', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                current_password: current,
+                                new_password:     newPass,
+                                confirm_password: confirm
+                            })
+                        });
+                        const data = await res.json();
+
+                        if (data.success) {
+                            showMsg('✅ Password changed successfully! Redirecting…', false);
+                            setTimeout(() => window.location.href = 'student-profile-view.php', 1800);
+                        } else {
+                            showMsg(data.message || 'Failed to change password.', true);
+                            btn.disabled = false;
+                            btn.textContent = 'Update Password';
+                        }
+                    } catch (err) {
+                        showMsg('An unexpected error occurred. Please try again.', true);
+                        btn.disabled = false;
+                        btn.textContent = 'Update Password';
+                    }
+                }
+
                 
                 // Password strength checker
                 document.getElementById('newPass')?.addEventListener('input', function(e) {

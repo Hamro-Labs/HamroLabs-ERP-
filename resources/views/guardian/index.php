@@ -36,9 +36,13 @@ include VIEWS_PATH . '/layouts/header.php';
                 <!-- Guardian Profile Dropdown -->
                 <div style="position:relative;">
                     <div class="u-chip" id="userChip">
-                        <div class="u-av">PS</div>
+                        <?php 
+                        $uName = $_SESSION['userData']['name'] ?? 'Guardian';
+                        $initials = strtoupper(substr($uName, 0, 2));
+                        ?>
+                        <div class="u-av"><?= $initials ?></div>
                         <div style="display:flex; flex-direction:column; margin-left:8px; line-height:1.2;">
-                            <span style="font-size:12px; font-weight:700;">Prakash Sharma</span>
+                            <span style="font-size:12px; font-weight:700;"><?= htmlspecialchars($uName) ?></span>
                             <span style="font-size:10px; opacity:0.8;">Guardian</span>
                         </div>
                         <i class="fa-solid fa-chevron-down" style="font-size:9px; margin-left:6px; opacity:0.7;"></i>
@@ -48,7 +52,7 @@ include VIEWS_PATH . '/layouts/header.php';
                         <a href="#" style="display:flex; align-items:center; gap:10px; padding:10px; font-size:13px; color:var(--text-dark); text-decoration:none; border-radius:8px;"><i class="fa-regular fa-circle-user" style="color:var(--green)"></i> My Profile</a>
                         <a href="#" style="display:flex; align-items:center; gap:10px; padding:10px; font-size:13px; color:var(--text-dark); text-decoration:none; border-radius:8px;"><i class="fa-solid fa-child" style="color:var(--teal)"></i> Student Profile</a>
                         <div style="height:1px; background:var(--card-border); margin:6px 0;"></div>
-                        <a href="#" style="display:flex; align-items:center; gap:10px; padding:10px; font-size:13px; color:var(--red); text-decoration:none; border-radius:8px;"><i class="fa-solid fa-power-off"></i> Logout</a>
+                        <a href="<?php echo APP_URL; ?>/auth/logout" style="display:flex; align-items:center; gap:10px; padding:10px; font-size:13px; color:var(--red); text-decoration:none; border-radius:8px;"><i class="fa-solid fa-power-off"></i> Logout</a>
                     </div>
                 </div>
             </div>
@@ -65,12 +69,12 @@ include VIEWS_PATH . '/layouts/header.php';
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <!-- Linked Child Info -->
-            <div class="sb-child-info">
-                <div class="child-av">RS</div>
+            <!-- Linked Child Info will be hydrated by JS/API or Session -->
+            <div class="sb-child-info" id="sbChildInfo">
+                <div class="child-av">...</div>
                 <div class="child-meta">
-                    <span class="child-name">Rohan Sharma</span>
-                    <span class="child-roll">Roll: HL-2081-KH-042</span>
+                    <span class="child-name">Loading...</span>
+                    <span class="child-roll">Loading...</span>
                 </div>
             </div>
 

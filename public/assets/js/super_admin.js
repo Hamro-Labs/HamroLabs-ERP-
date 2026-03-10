@@ -96,60 +96,92 @@ const SuperAdmin = (function () {
         renderDashboard();
         break;
       case 'tenants':
-        fetchAndRender('pages/super_admin/tenant-management.php');
+        renderTenants();
         break;
       case 'plans':
-        if (activeSub === 'sub-plans') fetchAndRender('pages/super_admin/plans.php');
-        else if (activeSub === 'flags') fetchAndRender('pages/super_admin/flags.php');
-        else if (activeSub === 'assign') fetchAndRender('pages/super_admin/plan-assign.php');
-        else fetchAndRender('pages/super_admin/plans.php');
+        if (activeSub === 'sub-plans') renderPlans();
+        else if (activeSub === 'flags') renderFlags();
+        else if (activeSub === 'assign') renderPlanAssign();
+        else renderPlans();
         break;
       case 'revenue':
-        if (activeSub === 'mrr') fetchAndRender('pages/super_admin/revenue.php');
-        else if (activeSub === 'payments') fetchAndRender('pages/super_admin/payments.php');
-        else if (activeSub === 'invoices') fetchAndRender('pages/super_admin/invoices.php');
-        else fetchAndRender('pages/super_admin/revenue.php');
+        if (activeSub === 'mrr') renderRevenue();
+        else if (activeSub === 'payments') renderPayments();
+        else if (activeSub === 'invoices') renderInvoices();
+        else renderRevenue();
         break;
       case 'analytics':
-        if (activeSub === 'users') fetchAndRender('pages/super_admin/users.php');
-        else if (activeSub === 'heatmap') fetchAndRender('pages/super_admin/heatmap.php');
-        else if (activeSub === 'sms') fetchAndRender('pages/super_admin/sms-credits.php');
-        else fetchAndRender('pages/super_admin/users.php');
+        if (activeSub === 'users') renderUsers();
+        else if (activeSub === 'heatmap') renderHeatmap();
+        else if (activeSub === 'sms') renderSmsCredits();
+        else renderUsers();
         break;
       case 'support':
-        if (activeSub === 'open' || activeSub === 'resolved' || activeSub === 'impersonate') fetchAndRender('pages/super_admin/support.php');
-        else fetchAndRender('pages/super_admin/support.php');
+        renderSupport();
         break;
       case 'system':
-        if (activeSub === 'toggles') fetchAndRender('pages/super_admin/flags.php');
-        else if (activeSub === 'maintenance') fetchAndRender('pages/super_admin/maintenance.php');
-        else if (activeSub === 'announce') fetchAndRender('pages/super_admin/announcements.php');
-        else if (activeSub === 'email-cfg') fetchAndRender('pages/super_admin/email-config.php');
-        else fetchGenericPage('System Configuration');
+        if (activeSub === 'toggles') renderFlags();
+        else if (activeSub === 'maintenance') renderMaintenance();
+        else if (activeSub === 'announce') renderAnnouncements();
+        else if (activeSub === 'email-cfg') renderEmailConfig();
+        else fetchAndRender('pages/super_admin/flags.php');
         break;
       case 'logs':
-        if (activeSub === 'audit' || activeSub === 'errors' || activeSub === 'api') fetchAndRender('pages/super_admin/logs.php');
-        else if (activeSub === 'db') fetchAndRender('pages/super_admin/db-insights.php');
-        else fetchAndRender('pages/super_admin/logs.php');
+        if (activeSub === 'audit' || activeSub === 'errors' || activeSub === 'api') renderLogs();
+        else if (activeSub === 'db') renderDbInsights();
+        else renderLogs();
         break;
       case 'settings':
-        if (activeSub === 'branding') fetchAndRender('pages/super_admin/branding.php');
-        else if (activeSub === 'sms-tpl') fetchAndRender('pages/super_admin/sms-templates.php');
-        else if (activeSub === 'email-cfg') fetchAndRender('pages/super_admin/email-config.php');
-        else fetchGenericPage('Settings');
+        if (activeSub === 'branding') renderBranding();
+        else if (activeSub === 'sms-tpl') renderSmsTemplates();
+        else if (activeSub === 'email-cfg') renderEmailConfig();
+        else renderGenericPage();
         break;
       case 'profile':
-        if (activeSub === 'view') fetchAndRender('pages/super_admin/profile.php');
-        else if (activeSub === 'password') fetchAndRender('pages/super_admin/change-password.php');
-        else if (activeSub === 'activity') fetchAndRender('pages/super_admin/activity-log.php');
-        else fetchAndRender('pages/super_admin/profile.php');
+        if (activeSub === 'view') renderProfile();
+        else if (activeSub === 'password') renderChangePassword();
+        else if (activeSub === 'activity') renderActivityLog();
+        else renderProfile();
         break;
       default:
         fetchGenericPage(activeNav);
     }
   }
 
-  // Helper function to fetch and render a PHP page
+  // API Base URL
+  const API_BASE = window.APP_URL ? window.APP_URL + '/api/superadmin/' : '/api/superadmin/';
+  
+  // Generic fetch wrapper
+  async function fetchAPI(endpoint, options = {}) {
+    try {
+      const url = API_BASE + endpoint;
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/json',
+          ...options.headers
+        },
+        credentials: 'same-origin'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || 'API error');
+      }
+      
+      return result;
+    } catch (err) {
+      console.error('[SuperAdmin API Error]:', err);
+      throw err;
+    }
+  }
+
+  // Helper function to fetch and render a PHP page (legacy - kept for fallback)
   function fetchAndRender(pagePath) {
     const mainContent = document.getElementById('mainContent');
     if (!mainContent) return;
@@ -571,6 +603,295 @@ const SuperAdmin = (function () {
       </div>
     `;
   }
+
+  /* ============================================================
+     TENANTS PAGE RENDERER
+     ============================================================ */
+  async function renderTenants() {
+    const mainContent = document.getElementById('mainContent');
+    if (!mainContent) return;
+    
+    mainContent.innerHTML = '<div class="pg fu" style="display:flex;align-items:center;justify-content:center;height:50vh;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:2rem;color:var(--sa-primary);"></i></div>';
+    
+    try {
+      const result = await fetchAPI('TenantsApi.php?action=list&limit=50');
+      const tenants = result.data || [];
+      
+      mainContent.innerHTML = `
+        <div class="pg fu">
+          <div class="pg-head">
+            <div class="pg-left">
+              <div class="pg-ico"><i class="fa-solid fa-building"></i></div>
+              <div>
+                <div class="pg-title">Tenant Management</div>
+                <div class="pg-sub">Manage all institutes on the platform</div>
+              </div>
+            </div>
+            <div class="pg-acts">
+              <button class="btn bt" onclick="SuperAdmin.goNav('tenants', 'add')"><i class="fa-solid fa-plus"></i> Add Institute</button>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+              <input type="text" id="tenantSearch" placeholder="Search institutes..." style="flex:1;padding:10px 15px;border:1px solid var(--cb);border-radius:8px;" onkeyup="SuperAdmin.filterTenants()">
+              <select id="tenantStatusFilter" style="padding:10px 15px;border:1px solid var(--cb);border-radius:8px;" onchange="SuperAdmin.filterTenants()">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="trial">Trial</option>
+                <option value="suspended">Suspended</option>
+              </select>
+            </div>
+            
+            <div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="border-bottom:2px solid var(--cb);">
+                    <th style="text-align:left;padding:12px;font-size:11px;color:var(--tl);">Institute</th>
+                    <th style="text-align:left;padding:12px;font-size:11px;color:var(--tl);">Plan</th>
+                    <th style="text-align:left;padding:12px;font-size:11px;color:var(--tl);">Status</th>
+                    <th style="text-align:left;padding:12px;font-size:11px;color:var(--tl);">Users</th>
+                    <th style="text-align:left;padding:12px;font-size:11px;color:var(--tl);">Joined</th>
+                    <th style="text-align:right;padding:12px;font-size:11px;color:var(--tl);">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tenantsTableBody">
+                  ${tenants.length === 0 ? '<tr><td colspan="6" style="text-align:center;padding:30px;">No tenants found</td></tr>' : 
+                    tenants.map(t => `
+                      <tr style="border-bottom:1px solid var(--cb);">
+                        <td style="padding:14px 12px;">
+                          <div style="font-weight:600;color:var(--td);">${t.name}</div>
+                          <div style="font-size:11px;color:var(--tl);">${t.subdomain}.hamroerp.com</div>
+                        </td>
+                        <td style="padding:14px 12px;"><span class="tag bg-p">${(t.plan || 'starter').charAt(0).toUpperCase() + (t.plan || 'starter').slice(1)}</span></td>
+                        <td style="padding:14px 12px;"><span class="tag ${t.status === 'active' ? 'bg-g' : t.status === 'trial' ? 'bg-t' : 'bg-r'}">${t.status}</span></td>
+                        <td style="padding:14px 12px;font-size:12px;">${t.user_count || 0}</td>
+                        <td style="padding:14px 12px;font-size:12px;">${new Date(t.created_at).toLocaleDateString()}</td>
+                        <td style="padding:14px 12px;text-align:right;">
+                          <button class="btn-icon" title="View" onclick="SuperAdmin.viewTenant(${t.id})"><i class="fa-solid fa-eye"></i></button>
+                          <button class="btn-icon" title="Edit" onclick="SuperAdmin.editTenant(${t.id})"><i class="fa-solid fa-pen"></i></button>
+                          <button class="btn-icon" title="Impersonate" onclick="SuperAdmin.impersonateTenant(${t.id})"><i class="fa-solid fa-user-secret"></i></button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      console.error('[SuperAdmin] Error loading tenants:', err);
+      mainContent.innerHTML = `<div class="pg fu"><div class="card"><p style="color:red;">Error loading tenants: ${err.message}</p></div></div>`;
+    }
+  }
+
+  /* ============================================================
+     PLANS PAGE RENDERER  
+     ============================================================ */
+  async function renderPlans() {
+    const mainContent = document.getElementById('mainContent');
+    if (!mainContent) return;
+    
+    mainContent.innerHTML = '<div class="pg fu" style="display:flex;align-items:center;justify-content:center;height:50vh;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:2rem;color:var(--sa-primary);"></i></div>';
+    
+    try {
+      const result = await fetchAPI('PlansApi.php?action=list');
+      const plans = result.data || [];
+      
+      mainContent.innerHTML = `
+        <div class="pg fu">
+          <div class="pg-head">
+            <div class="pg-left">
+              <div class="pg-ico"><i class="fa-solid fa-layer-group"></i></div>
+              <div>
+                <div class="pg-title">Subscription Plans</div>
+                <div class="pg-sub">Manage pricing and plan features</div>
+              </div>
+            </div>
+          </div>
+          
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:20px;">
+            ${plans.map(plan => `
+              <div class="card" style="border:1px solid var(--cb);border-radius:12px;padding:24px;">
+                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:16px;">
+                  <div>
+                    <h3 style="font-size:18px;font-weight:700;color:var(--td);margin:0;">${plan.name}</h3>
+                    <div style="font-size:24px;font-weight:800;color:var(--sa-primary);margin-top:8px;">Rs ${plan.price.toLocaleString()}<span style="font-size:12px;font-weight:400;color:var(--tl);">/mo</span></div>
+                  </div>
+                  <span class="tag bg-p">${plan.tenant_count || 0} tenants</span>
+                </div>
+                <ul style="list-style:none;padding:0;margin:20px 0;">
+                  <li style="padding:6px 0;font-size:13px;"><i class="fa-solid fa-check" style="color:var(--success);margin-right:8px;"></i> Up to ${plan.student_limit === -1 ? 'Unlimited' : plan.student_limit} students</li>
+                  <li style="padding:6px 0;font-size:13px;"><i class="fa-solid fa-check" style="color:var(--success);margin-right:8px;"></i> ${plan.admin_accounts === -1 ? 'Unlimited' : plan.admin_accounts} admin accounts</li>
+                  <li style="padding:6px 0;font-size:13px;"><i class="fa-solid fa-check" style="color:var(--success);margin-right:8px;"></i> ${typeof plan.features.sms === 'number' ? plan.features.sms + ' SMS' : plan.features.sms} credits</li>
+                  ${plan.features.lms ? '<li style="padding:6px 0;font-size:13px;"><i class="fa-solid fa-check" style="color:var(--success);margin-right:8px;"></i> LMS Module</li>' : ''}
+                  ${plan.features.reports ? '<li style="padding:6px 0;font-size:13px;"><i class="fa-solid fa-check" style="color:var(--success);margin-right:8px;"></i> Advanced Reports</li>' : ''}
+                  ${plan.features.api ? '<li style="padding:6px 0;font-size:13px;"><i class="fa-solid fa-check" style="color:var(--success);margin-right:8px;"></i> API Access</li>' : ''}
+                </ul>
+                <button class="btn bt" style="width:100%;" onclick="SuperAdmin.goNav('plans', 'flags&id=${plan.id}')">Manage Features</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      console.error('[SuperAdmin] Error loading plans:', err);
+      mainContent.innerHTML = `<div class="pg fu"><div class="card"><p style="color:red;">Error loading plans</p></div></div>`;
+    }
+  }
+
+  /* ============================================================
+     REVENUE PAGE RENDERER
+     ============================================================ */
+  async function renderRevenue() {
+    const mainContent = document.getElementById('mainContent');
+    if (!mainContent) return;
+    
+    mainContent.innerHTML = '<div class="pg fu" style="display:flex;align-items:center;justify-content:center;height:50vh;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:2rem;color:var(--sa-primary);"></i></div>';
+    
+    try {
+      const result = await fetchAPI('RevenueApi.php?action=mrr');
+      const data = result.data || {};
+      
+      mainContent.innerHTML = `
+        <div class="pg fu">
+          <div class="pg-head">
+            <div class="pg-left">
+              <div class="pg-ico"><i class="fa-solid fa-chart-line"></i></div>
+              <div>
+                <div class="pg-title">Revenue Analytics</div>
+                <div class="pg-sub">Monthly Recurring Revenue (MRR)</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="sg">
+            <div class="sc fu">
+              <span style="font-size:12px;font-weight:700;color:var(--tl);text-transform:uppercase;">Current MRR</span>
+              <div class="sc-val" style="font-size:28px;margin-top:8px;">${data.mrr_formatted || 'Rs 0'}</div>
+              <p class="sc-delta"><i class="fa-solid fa-arrow-trend-up" style="color:var(--success);"></i> ${data.yoy_growth || 0}% YoY</p>
+            </div>
+            <div class="sc fu">
+              <span style="font-size:12px;font-weight:700;color:var(--tl);text-transform:uppercase;">Total Revenue</span>
+              <div class="sc-val" style="font-size:28px;margin-top:8px;">Rs ${((data.total_mrr || 0) / 1000).toFixed(1)}K</div>
+              <p class="sc-delta">Last 12 months</p>
+            </div>
+          </div>
+          
+          <div class="card" style="min-height:300px;margin-top:20px;">
+            <h3 style="font-size:16px;font-weight:700;margin-bottom:20px;">MRR Trend</h3>
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+      `;
+      
+      // Render chart
+      if (data.mrr_trend && data.mrr_trend.length > 0) {
+        const ctx = document.getElementById('revenueChart')?.getContext('2d');
+        if (ctx) {
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: data.mrr_trend.map(d => d.month),
+              datasets: [{
+                label: 'MRR',
+                data: data.mrr_trend.map(d => d.mrrK),
+                backgroundColor: '#009E7E',
+                borderRadius: 4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: { beginAtZero: true, ticks: { callback: v => 'Rs ' + v + 'K' } },
+                x: { grid: { display: false } }
+              }
+            }
+          });
+        }
+      }
+    } catch (err) {
+      console.error('[SuperAdmin] Error loading revenue:', err);
+      mainContent.innerHTML = `<div class="pg fu"><div class="card"><p style="color:red;">Error loading revenue data</p></div></div>`;
+    }
+  }
+
+  /* ============================================================
+     SUPPORT PAGE RENDERER
+     ============================================================ */
+  async function renderSupport() {
+    const mainContent = document.getElementById('mainContent');
+    if (!mainContent) return;
+    
+    mainContent.innerHTML = '<div class="pg fu" style="display:flex;align-items:center;justify-content:center;height:50vh;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:2rem;color:var(--sa-primary);"></i></div>';
+    
+    try {
+      const result = await fetchAPI('SupportApi.php?action=list&status=open');
+      const tickets = result.data || [];
+      const statusCounts = result.status_counts || {};
+      
+      mainContent.innerHTML = `
+        <div class="pg fu">
+          <div class="pg-head">
+            <div class="pg-left">
+              <div class="pg-ico"><i class="fa-solid fa-headset"></i></div>
+              <div>
+                <div class="pg-title">Support Tickets</div>
+                <div class="pg-sub">Manage institute support requests</div>
+              </div>
+            </div>
+          </div>
+          
+          <div style="display:flex;gap:12px;margin-bottom:20px;">
+            <button class="btn ${activeSub === 'open' || !activeSub ? 'bt' : 'bs'}" onclick="SuperAdmin.goNav('support', 'open')">Open (${statusCounts.open || 0})</button>
+            <button class="btn ${activeSub === 'resolved' ? 'bt' : 'bs'}" onclick="SuperAdmin.goNav('support', 'resolved')">Resolved (${statusCounts.resolved || 0})</button>
+            <button class="btn ${activeSub === 'all' ? 'bt' : 'bs'}" onclick="SuperAdmin.goNav('support', 'all')">All</button>
+          </div>
+          
+          <div class="card">
+            ${tickets.length === 0 ? 
+              '<div style="text-align:center;padding:40px;color:var(--tl);">No support tickets</div>' : 
+              tickets.map(t => `
+                <div style="padding:16px;border-bottom:1px solid var(--cb);display:flex;align-items:center;gap:16px;">
+                  <div style="width:10px;height:10px;border-radius:50%;background:${t.priority === 'critical' ? 'var(--red)' : t.priority === 'high' ? 'var(--amber)' : 'var(--blue)'}"></div>
+                  <div style="flex:1;">
+                    <div style="font-weight:600;">${t.subject || 'No Subject'}</div>
+                    <div style="font-size:11px;color:var(--tl);">${t.tenant_name || 'N/A'} - ${new Date(t.created_at).toLocaleDateString()}</div>
+                  </div>
+                  <span class="tag ${t.status === 'open' ? 'bg-r' : t.status === 'in_progress' ? 'bg-t' : 'bg-g'}">${t.status}</span>
+                  <button class="btn-icon" onclick="SuperAdmin.viewTicket(${t.id})"><i class="fa-solid fa-eye"></i></button>
+                </div>
+              `).join('')
+            }
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      console.error('[SuperAdmin] Error loading support:', err);
+      mainContent.innerHTML = `<div class="pg fu"><div class="card"><p style="color:red;">Error loading tickets</p></div></div>`;
+    }
+  }
+
+  // Placeholder functions for other pages - will be implemented as needed
+  async function renderFlags() { fetchAndRender('pages/super_admin/flags.php'); }
+  async function renderPlanAssign() { fetchAndRender('pages/super_admin/plan-assign.php'); }
+  async function renderPayments() { fetchAndRender('pages/super_admin/payments.php'); }
+  async function renderInvoices() { fetchAndRender('pages/super_admin/invoices.php'); }
+  async function renderUsers() { fetchAndRender('pages/super_admin/users.php'); }
+  async function renderHeatmap() { fetchAndRender('pages/super_admin/heatmap.php'); }
+  async function renderSmsCredits() { fetchAndRender('pages/super_admin/sms-credits.php'); }
+  async function renderMaintenance() { fetchAndRender('pages/super_admin/maintenance.php'); }
+  async function renderAnnouncements() { fetchAndRender('pages/super_admin/announcements.php'); }
+  async function renderLogs() { fetchAndRender('pages/super_admin/logs.php'); }
+  async function renderDbInsights() { fetchAndRender('pages/super_admin/db-insights.php'); }
+  async function renderBranding() { fetchAndRender('pages/super_admin/branding.php'); }
+  async function renderSmsTemplates() { fetchAndRender('pages/super_admin/sms-templates.php'); }
+  async function renderEmailConfig() { fetchAndRender('pages/super_admin/email-config.php'); }
+  async function renderProfile() { fetchAndRender('pages/super_admin/profile.php'); }
+  async function renderChangePassword() { fetchAndRender('pages/super_admin/change-password.php'); }
+  async function renderActivityLog() { fetchAndRender('pages/super_admin/activity-log.php'); }
 
   async function fetchSuperAdminStats() {
     try {
@@ -1017,6 +1338,17 @@ function goNav(id, subId = null) {
     closeAllModals,
     updateStatCard,
     updateWorkflow,
+    // Page renderers
+    renderTenants,
+    renderPlans,
+    renderRevenue,
+    renderSupport,
+    // Helper functions exposed globally
+    filterTenants: () => { /* Will be implemented */ },
+    viewTenant: (id) => { console.log('View tenant:', id); },
+    editTenant: (id) => { console.log('Edit tenant:', id); },
+    impersonateTenant: (id) => { console.log('Impersonate tenant:', id); },
+    viewTicket: (id) => { console.log('View ticket:', id); },
     charts,
     dataTables,
   };
