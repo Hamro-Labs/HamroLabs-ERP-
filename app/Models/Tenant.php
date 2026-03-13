@@ -1,3 +1,4 @@
+<?php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -9,7 +10,8 @@ class Tenant extends Model {
     protected $table = 'tenants';
     protected $fillable = [
         'name', 'nepali_name', 'subdomain', 'brand_color', 'tagline', 'phone', 
-        'address', 'province', 'plan', 'status', 'student_limit', 'sms_credits', 'trial_ends_at'
+        'address', 'province', 'plan', 'status', 'student_limit', 'sms_credits', 'trial_ends_at',
+        'institute_type'
     ];
     
     /**

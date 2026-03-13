@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Hamro ERP â€” Add New Tenant (Single-Page Â· Bootstrap 5 Â· Live Preview)
  */
@@ -80,6 +80,21 @@ renderSidebar($activePage); ?>
                                     oninput="syncPreview()">
                             </div>
                         </div>
+                        
+                        <!-- Institute Type Row -->
+                        <div class="row g-3 mt-1">
+                            <div class="col-12">
+                                <label class="form-lbl">Institute Type <span class="req">*</span></label>
+                                <select class="form-inp" id="instituteType" onchange="syncPreview()" style="appearance:auto;">
+                                    <option value="">-- Select Institute Type --</option>
+                                    <option value="loksewa preparation">Loksewa Preparation</option>
+                                    <option value="computer training">Computer Training</option>
+                                    <option value="bridge course">Bridge Course</option>
+                                    <option value="tuition">Tuition</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <span class="err-msg" id="err-instituteType"></span>
+                            </div>
 
                         <!-- Tagline -->
                         <div class="row g-3 mt-1">
@@ -438,6 +453,7 @@ renderSidebar($activePage); ?>
                         <div class="chk-row" id="chk-contact"><i class="fa-regular fa-circle-dot"></i><span>Phone &amp; email provided</span></div>
                         <div class="chk-row" id="chk-address"><i class="fa-regular fa-circle-dot"></i><span>Address entered</span></div>
                         <div class="chk-row" id="chk-logo"><i class="fa-regular fa-circle-dot"></i><span>Logo uploaded</span></div>
+                        <div class="chk-row" id="chk-type"><i class="fa-regular fa-circle-dot"></i><span>Institute type selected</span></div>
                         <div class="chk-row" id="chk-admin"><i class="fa-regular fa-circle-dot"></i><span>Admin account details</span></div>
                         <div class="chk-row" id="chk-pass"><i class="fa-regular fa-circle-dot"></i><span>Strong password set</span></div>
                     </div>
@@ -644,6 +660,7 @@ function syncPreview() {
     const color   = _gid('themeColor')?.value   || '#009E7E';
     const adminN  = _val('adminName')  || 'Admin Name';
     const adminE  = _val('adminEmail') || 'admin@institute.com';
+    const instType = _gid('instituteType')?.value || '';
 
     _setText('mockName', name);    _setText('mockNameNp', nameNp);
     _setText('mockTagline', tagline); _setText('mockEmail', email);
@@ -770,6 +787,7 @@ function updateChecklist() {
     _chkSet('chk-contact',   !!_val('instEmail') && !!_val('instPhone'));
     _chkSet('chk-address',   !!_val('instAddress'));
     _chkSet('chk-logo',      _gid('mockLogoImg') ? _gid('mockLogoImg').style.display !== 'none' : false);
+    _chkSet('chk-type',      !!_val('instituteType'));
     _chkSet('chk-admin',     !!_val('adminName') && !!_val('adminEmail'));
     const p = _val('adminPass');
     const strong = p.length >= 8 && /[A-Z]/.test(p) && /[0-9]/.test(p) && /[^A-Za-z0-9]/.test(p);
@@ -792,8 +810,9 @@ function validateAll() {
         {id:'subdomainInp', err:'err-subdomain',   msg:'Subdomain is required',  min:3, minMsg:'Min 3 characters'},
         {id:'adminName',    err:'err-adminName',   msg:'Admin name is required'},
         {id:'adminPhone',   err:'err-adminPhone',  msg:'Admin phone is required'},
-        {id:'adminEmail',   err:'err-adminEmail',  msg:'Admin email is required', type:'email'},
+        {id:'adminEmail',    err:'err-adminEmail',  msg:'Admin email is required', type:'email'},
         {id:'adminPass',    err:'err-adminPass',   msg:'Password is required'},
+        {id:'instituteType', err:'err-instituteType', msg:'Institute type is required'},
     ];
     rules.forEach(function(r) {
         const e = _gid(r.err); if (e) e.textContent = '';
@@ -849,6 +868,7 @@ function saveInstitute() {
     fd.append('plan',       _gid('billingPlan').value);
     fd.append('status',     _gid('tenantStatus').value);
     fd.append('brandColor', _gid('themeColor').value);
+    fd.append('instituteType', _val('instituteType'));
     var logo = _gid('instLogo');
     if (logo && logo.files && logo.files[0]) fd.append('logo', logo.files[0]);
     var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || window.CSRF_TOKEN;
@@ -903,7 +923,7 @@ window.togglePass           = togglePass;
     try { syncPreview(); } catch(e) {}
     ['instName','instNameNp','instTagline','instEmail','instPhone','instAddress','instWebsite','adminName','adminEmail']
         .forEach(function(id) { var el = _gid(id); if (el) el.addEventListener('input', syncPreview); });
-    ['billingPlan','tenantStatus']
+    ['billingPlan','tenantStatus','instituteType']
         .forEach(function(id) { var el = _gid(id); if (el) el.addEventListener('change', syncPreview); });
     var dz = _gid('logoDropZone');
     if (dz) {

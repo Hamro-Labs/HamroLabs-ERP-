@@ -44,12 +44,13 @@ try {
     $adminPhone = sanitizeInput($_POST['adminPhone'] ?? '');
     $adminPass = $_POST['adminPass'] ?? ''; // Don't sanitize password as it might have special chars
     
+    $instituteType = sanitizeInput($_POST['instituteType'] ?? '');
     $plan = sanitizeInput($_POST['plan'] ?? 'starter');
     $status = sanitizeInput($_POST['status'] ?? 'trial');
     
     // Simple validation
-    if (!$name || !$subdomain || !$adminEmail || !$adminPass) {
-        throw new Exception("Required fields are missing.");
+    if (!$name || !$subdomain || !$adminEmail || !$adminPass || !$instituteType) {
+        throw new Exception("Required fields are missing (Name, Subdomain, Admin Email, Password, and Institute Type).");
     }
 
     // Password strength validation
@@ -81,8 +82,8 @@ try {
     $pdo->beginTransaction();
     
     // 1. Insert Tenant
-    $stmt = $pdo->prepare("INSERT INTO tenants (name, nepali_name, subdomain, brand_color, tagline, address, phone, email, plan, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-    $stmt->execute([$name, $nepaliName, $subdomain, $brandColor, $tagline, $address, $phone, $email, $plan, $status, $currentUserId]);
+    $stmt = $pdo->prepare("INSERT INTO tenants (name, nepali_name, subdomain, institute_type, brand_color, tagline, address, phone, email, plan, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+    $stmt->execute([$name, $nepaliName, $subdomain, $instituteType, $brandColor, $tagline, $address, $phone, $email, $plan, $status, $currentUserId]);
     $tenantId = $pdo->lastInsertId();
 
     // Process logo if uploaded

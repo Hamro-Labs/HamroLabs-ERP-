@@ -38,11 +38,12 @@ try {
     $tagline = sanitizeInput($_POST['tagline'] ?? '');
     $address = sanitizeInput($_POST['address'] ?? '');
     $phone = sanitizeInput($_POST['phone'] ?? '');
+    $instituteType = sanitizeInput($_POST['instituteType'] ?? '');
     
     $plan = sanitizeInput($_POST['plan'] ?? 'starter');
     $status = sanitizeInput($_POST['status'] ?? 'trial');
     
-    if (!$id || !$name || !$subdomain) {
+    if (!$id || !$name || !$subdomain || !$instituteType) {
         throw new Exception("Required fields are missing.");
     }
     
@@ -56,8 +57,8 @@ try {
     $pdo->beginTransaction();
     
     // Update Tenant
-    $stmt = $pdo->prepare("UPDATE tenants SET name = ?, nepali_name = ?, subdomain = ?, brand_color = ?, tagline = ?, address = ?, phone = ?, plan = ?, status = ?, updated_at = NOW() WHERE id = ?");
-    $stmt->execute([$name, $nepaliName, $subdomain, $brandColor, $tagline, $address, $phone, $plan, $status, $id]);
+    $stmt = $pdo->prepare("UPDATE tenants SET name = ?, nepali_name = ?, subdomain = ?, institute_type = ?, brand_color = ?, tagline = ?, address = ?, phone = ?, plan = ?, status = ?, updated_at = NOW() WHERE id = ?");
+    $stmt->execute([$name, $nepaliName, $subdomain, $instituteType, $brandColor, $tagline, $address, $phone, $plan, $status, $id]);
     
     // Log the action
     $userIp = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';

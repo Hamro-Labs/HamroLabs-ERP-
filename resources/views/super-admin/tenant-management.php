@@ -102,6 +102,17 @@ require_once VIEWS_PATH . '/layouts/header_1.php';
                             <label class="form-label">Primary Phone</label>
                             <input type="text" name="phone" id="edit_phone" class="form-control" placeholder="98XXXXXXXX">
                         </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label">Institute Type *</label>
+                            <select name="instituteType" id="edit_instituteType" class="form-control" required>
+                                <option value="">-- Select Type --</option>
+                                <option value="loksewa preparation">Loksewa Preparation</option>
+                                <option value="computer training">Computer Training</option>
+                                <option value="bridge course">Bridge Course</option>
+                                <option value="tuition">Tuition</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Branding & Plan -->
@@ -230,9 +241,14 @@ function renderTenants(tenants) {
                     <h3 style="font-size:16px; font-weight:800; color:var(--td); margin:0;">${escapedName}</h3>
                     <span class="tag ${statusClass}">${escapedStatus}</span>
                 </div>
-                <div style="font-size:11px; color:var(--tl); margin-bottom:12px; display:flex; gap:8px;">
-                    <span><i class="fa-solid fa-link"></i> ${escapedSubdomain}.hamroerp.com</span>
-                    ${escapedNepaliName ? `<span>| ${escapedNepaliName}</span>` : ''}
+                <div style="font-size:11px; color:var(--tl); margin-bottom:12px; display:flex; flex-direction:column; gap:4px;">
+                    <div style="display:flex; gap:8px;">
+                        <span><i class="fa-solid fa-link"></i> ${escapedSubdomain}.hamroerp.com</span>
+                        ${escapedNepaliName ? `<span>| ${escapedNepaliName}</span>` : ''}
+                    </div>
+                    <div style="display:flex; gap:8px; font-weight:700; color:var(--sa-primary);">
+                        <i class="fa-solid fa-graduation-cap"></i> ${t.institute_type ? t.institute_type.toUpperCase() : 'NOT SET'}
+                    </div>
                 </div>
                 
                 <p style="font-size:12px; color:var(--tb); line-height:1.4; margin-bottom:16px; height:34px; overflow:hidden;">
@@ -297,6 +313,7 @@ function openEditTenantModal(t) {
     document.getElementById('edit_brandColor').value = t.brand_color || '#009E7E';
     document.getElementById('brandColorHex').value = t.brand_color || '#009E7E';
     document.getElementById('edit_tagline').value = t.tagline || '';
+    document.getElementById('edit_instituteType').value = t.institute_type || '';
     document.getElementById('edit_plan').value = t.plan;
     document.getElementById('edit_status').value = t.status;
     

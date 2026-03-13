@@ -144,13 +144,14 @@ try {
             }
             
             $stmt = $db->prepare("
-                INSERT INTO tenants (name, subdomain, phone, address, province, plan, status, student_limit, sms_credits, trial_ends_at, created_at)
-                VALUES (:name, :subdomain, :phone, :address, :province, :plan, :status, :student_limit, :sms_credits, :trial_ends_at, NOW())
+                INSERT INTO tenants (name, subdomain, institute_type, phone, address, province, plan, status, student_limit, sms_credits, trial_ends_at, created_at)
+                VALUES (:name, :subdomain, :institute_type, :phone, :address, :province, :plan, :status, :student_limit, :sms_credits, :trial_ends_at, NOW())
             ");
             
             $stmt->execute([
                 'name' => $input['name'],
                 'subdomain' => $input['subdomain'],
+                'institute_type' => $input['institute_type'] ?? null,
                 'phone' => $input['phone'] ?? null,
                 'address' => $input['address'] ?? null,
                 'province' => $input['province'] ?? null,
@@ -182,7 +183,7 @@ try {
             $fields = [];
             $params = ['id' => $id];
             
-            $allowedFields = ['name', 'phone', 'address', 'province', 'plan', 'status', 'student_limit', 'sms_credits'];
+            $allowedFields = ['name', 'phone', 'address', 'province', 'plan', 'status', 'student_limit', 'sms_credits', 'institute_type'];
             foreach ($allowedFields as $field) {
                 if (isset($input[$field])) {
                     $fields[] = "$field = :$field";
